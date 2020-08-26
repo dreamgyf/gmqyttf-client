@@ -5,6 +5,9 @@ plugins {
 group 'com.dreamgyf'
 version '0.0.1'
 
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 repositories {
     mavenCentral()
 }
