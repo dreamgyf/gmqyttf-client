@@ -1,14 +1,26 @@
 package com.dreamgyf.gmqyttf.client.task;
 
-import com.dreamgyf.gmqyttf.client.socket.MqttSocket;
+import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
+import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
+import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 
 public abstract class MqttTask implements Runnable {
 
-    private final MqttSocket mSocket;
+    private final MqttVersion mVersion;
 
-    public MqttTask(MqttSocket socket) {
+    private final MqttWritableSocket mSocket;
+
+    private OnMqttExceptionListener mListener;
+
+    public MqttTask(MqttVersion version, MqttWritableSocket socket) {
+        mVersion = version;
         mSocket = socket;
+    }
+
+    public MqttVersion getVersion() {
+        return mVersion;
     }
 
     @Override
@@ -20,12 +32,26 @@ public abstract class MqttTask implements Runnable {
         mSocket.write(packet);
     }
 
-    public void readSocketOneBit() throws MqttSocketException {
-        mSocket.readOneBit();
+    public byte readSocketOneBit() throws MqttSocketException {
+        return mSocket.readOneBit();
     }
 
-    public void readSocketBit(int bitCount) throws MqttSocketException {
-        mSocket.readBit(bitCount);
+    public byte[] readSocketBit(int bitCount) throws MqttSocketException {
+        return mSocket.readBit(bitCount);
+    }
+
+    protected OnMqttExceptionListener getOnMqttExceptionListener() {
+        return mListener;
+    }
+
+    public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
+        mListener = listener;
+    }
+
+    protected void onMqttExceptionThrow(MqttException e) {
+        if(mListener != null) {
+            mListener.onMqttExceptionThrow(e);
+        }
     }
 
     public abstract void stop();

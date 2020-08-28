@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class MqttSocket {
+public class MqttSocket implements MqttWritableSocket {
 
     private Socket mSocket;
 
@@ -41,6 +41,7 @@ public class MqttSocket {
         }
     }
 
+    @Override
     public void write(byte[] packet) throws MqttSocketException {
         synchronized (mWriteLock) {
             if (isConnected()) {
@@ -57,10 +58,12 @@ public class MqttSocket {
         }
     }
 
+    @Override
     public byte readOneBit() throws MqttSocketException {
         return readBit(1)[0];
     }
 
+    @Override
     public byte[] readBit(int bitCount) throws MqttSocketException {
         synchronized (mReadLock) {
             if (isConnected()) {

@@ -1,7 +1,6 @@
 package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
-import com.dreamgyf.gmqyttf.client.service.MqttClientService;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.IllegalServerException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttConnectedException;
@@ -12,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class MqttClient {
 
-    private final MqttClientService service = new MqttClientService();
+    private final MqttClientController service = new MqttClientController();
 
     private boolean isConnected;
 
@@ -54,6 +53,9 @@ public class MqttClient {
                 callback.onConnectFailure(e);
             }
         }
+
+
+
     }
 
     public boolean isConnected() {
