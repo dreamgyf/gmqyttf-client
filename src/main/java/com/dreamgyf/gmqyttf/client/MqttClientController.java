@@ -20,18 +20,19 @@ public class MqttClientController {
 
     private MqttServiceHub mServiceHub;
 
-    public MqttClientController() {
+    public MqttClientController(MqttVersion version) {
+        mVersion = version;
         mThreadPool = new ThreadPoolExecutor(10, 30,
                 30, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10),
                 Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
         mPacketQueue = new MqttPacketQueue();
-        mServiceHub = new MqttServiceHub(mVersion, mSocket, mThreadPool);
     }
 
     public void start(String host, int port) throws MqttNetworkException {
         mSocket = new MqttSocket();
         mSocket.connect(host, port);
 
+        mServiceHub = new MqttServiceHub(mVersion, mSocket, mThreadPool, mPacketQueue);
         mServiceHub.init();
         mServiceHub.start();
     }

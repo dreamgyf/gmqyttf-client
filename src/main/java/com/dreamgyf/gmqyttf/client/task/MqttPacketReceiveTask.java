@@ -5,7 +5,6 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttPacketType;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketReadEmptyException;
 import com.dreamgyf.gmqyttf.common.exception.packet.IllegalPacketException;
 import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.utils.ByteUtils;
@@ -28,11 +27,7 @@ public class MqttPacketReceiveTask extends MqttTask {
         while (isRunning) {
             try {
                 byte[] header = new byte[1];
-                try {
-                    header[0] = readSocketOneBit();
-                } catch (MqttSocketReadEmptyException ignored) {
-                    continue;
-                }
+                header[0] = readSocketOneBit();
                 byte type = MqttPacketUtils.parseType(header[0]);
                 if (MqttPacketUtils.isTypeInVersion(type, getVersion())) {
                     byte[] tempRemainLength = new byte[4];

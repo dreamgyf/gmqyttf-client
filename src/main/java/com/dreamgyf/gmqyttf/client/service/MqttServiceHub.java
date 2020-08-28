@@ -18,10 +18,11 @@ public class MqttServiceHub {
 
     private MqttReceiveService mReceiveService;
 
-    public MqttServiceHub(MqttVersion version, MqttWritableSocket socket, Executor threadPool) {
+    public MqttServiceHub(MqttVersion version, MqttWritableSocket socket, Executor threadPool, MqttPacketQueue packetQueue) {
         mVersion = version;
         mSocket = socket;
         mThreadPool = threadPool;
+        mPacketQueue = packetQueue;
     }
 
     public void init() {

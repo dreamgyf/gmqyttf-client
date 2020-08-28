@@ -1,13 +1,10 @@
 package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import junit.framework.TestCase;
-import org.junit.Test;
 
-public class MqttClientTest extends TestCase {
+public class Demo {
 
-    @Test
-    public void test() {
+    public static void main(String[] argv) {
         MqttClient client = new MqttClient.Builder()
                 .cleanSession(true)
                 .clientId("test")
@@ -15,5 +12,4 @@ public class MqttClientTest extends TestCase {
 
         client.connect("broker.emqx.io", 1883);
     }
-
 }

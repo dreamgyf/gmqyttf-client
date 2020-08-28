@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 public class MqttClient {
 
-    private final MqttClientController service = new MqttClientController();
+    private MqttClientController controller;
 
     private boolean isConnected;
 
@@ -46,8 +46,9 @@ public class MqttClient {
                 .password(password)
                 .build(version);
 
+        controller = new MqttClientController(version);
         try {
-            service.start(server, port);
+            controller.start(server, port);
         } catch (MqttNetworkException e) {
             if (callback != null) {
                 callback.onConnectFailure(e);

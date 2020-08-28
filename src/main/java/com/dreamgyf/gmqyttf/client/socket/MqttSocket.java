@@ -70,8 +70,8 @@ public class MqttSocket implements MqttWritableSocket {
                 try {
                     InputStream is = mSocket.getInputStream();
                     byte[] reader = new byte[bitCount];
-                    if (is.read(reader) < 0) {
-                        throw new MqttSocketReadException();
+                    if (is.read(reader) <= 0) {
+                        throw new MqttSocketConnectException();
                     }
                     return reader;
                 } catch (IOException e) {
