@@ -14,37 +14,32 @@ public class MqttPacketReceiveTask extends MqttTask {
 
     private final MqttPacketQueue.Response mPacketRespQueue;
 
-    private boolean isRunning = true;
-
     public MqttPacketReceiveTask(MqttVersion version, MqttWritableSocket socket, MqttPacketQueue.Response packetRespQueue) {
         super(version, socket);
         mPacketRespQueue = packetRespQueue;
     }
 
     @Override
-    public void run() {
-        super.run();
-        while (isRunning) {
-            try {
-                byte[] header = new byte[1];
-                header[0] = readSocketOneBit();
-                byte type = MqttPacketUtils.parseType(header[0]);
-                if (MqttPacketUtils.isTypeInVersion(type, getVersion())) {
-                    byte[] tempRemainLength = new byte[4];
-                    int pos = 0;
-                    do {
-                        tempRemainLength[pos++] = readSocketOneBit();
-                    } while (MqttPacketUtils.hasNextRemainingLength(tempRemainLength[pos - 1]));
-                    byte[] remainLength = ByteUtils.getSection(tempRemainLength, 0, pos);
-                    byte[] fixHeader = ByteUtils.combine(header, remainLength);
-                    byte[] residue = readSocketBit(MqttPacketUtils.getRemainingLength(remainLength, 0));
-                    byte[] packet = ByteUtils.combine(fixHeader, residue);
-                    pushPacket(packet, getVersion());
-                }
-            } catch (MqttException e) {
-                e.printStackTrace();
-                onMqttExceptionThrow(e);
+    public void cycle() {
+        try {
+            byte[] header = new byte[1];
+            header[0] = readSocketOneBit();
+            byte type = MqttPacketUtils.parseType(header[0]);
+            if (MqttPacketUtils.isTypeInVersion(type, getVersion())) {
+                byte[] tempRemainLength = new byte[4];
+                int pos = 0;
+                do {
+                    tempRemainLength[pos++] = readSocketOneBit();
+                } while (MqttPacketUtils.hasNextRemainingLength(tempRemainLength[pos - 1]));
+                byte[] remainLength = ByteUtils.getSection(tempRemainLength, 0, pos);
+                byte[] fixHeader = ByteUtils.combine(header, remainLength);
+                byte[] residue = readSocketBit(MqttPacketUtils.getRemainingLength(remainLength, 0));
+                byte[] packet = ByteUtils.combine(fixHeader, residue);
+                pushPacket(packet, getVersion());
             }
+        } catch (MqttException e) {
+            e.printStackTrace();
+            onMqttExceptionThrow(e);
         }
     }
 
@@ -104,8 +99,4 @@ public class MqttPacketReceiveTask extends MqttTask {
         }
     }
 
-    @Override
-    public void stop() {
-        isRunning = false;
-    }
 }

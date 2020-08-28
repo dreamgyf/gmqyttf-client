@@ -1,11 +1,16 @@
 package com.dreamgyf.gmqyttf.client;
 
+import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
 import com.dreamgyf.gmqyttf.client.service.MqttServiceHub;
 import com.dreamgyf.gmqyttf.client.socket.MqttSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
+import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
+import javafx.util.Pair;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.*;
 
 public class MqttClientController {
@@ -45,6 +50,7 @@ public class MqttClientController {
         mPacketQueue.clear();
     }
 
-
-
+    public void connect(MqttConnectPacket packet, MqttConnectCallback callback) {
+        mServiceHub.connect(packet, callback);
+    }
 }

@@ -14,18 +14,30 @@ public abstract class MqttTask implements Runnable {
 
     private OnMqttExceptionListener mListener;
 
+    private boolean isRunning;
+
     public MqttTask(MqttVersion version, MqttWritableSocket socket) {
         mVersion = version;
         mSocket = socket;
+        reset();
     }
 
-    public MqttVersion getVersion() {
-        return mVersion;
+    public void reset() {
+        isRunning = true;
     }
 
     @Override
     public void run() {
         Thread.currentThread().setName("Thread-" + this.getClass().getName());
+        while (isRunning) {
+            cycle();
+        }
+    }
+
+    public abstract void cycle();
+
+    public MqttVersion getVersion() {
+        return mVersion;
     }
 
     public void writeSocket(byte[] packet) throws MqttSocketException {
@@ -54,6 +66,8 @@ public abstract class MqttTask implements Runnable {
         }
     }
 
-    public abstract void stop();
+    public void stop() {
+        isRunning = false;
+    }
 
 }

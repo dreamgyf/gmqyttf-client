@@ -1,12 +1,14 @@
 package com.dreamgyf.gmqyttf.client.env;
 
+import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.common.packet.*;
+import javafx.util.Pair;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MqttPacketQueue {
 
-    public class Request {
+    public static class Request {
         public final LinkedBlockingQueue<MqttConnectPacket> connect;
         public final LinkedBlockingQueue<MqttPublishPacket> publish;
         public final LinkedBlockingQueue<MqttPubackPacket> puback;
@@ -45,7 +47,7 @@ public class MqttPacketQueue {
         }
     }
 
-    public class Response {
+    public static class Response {
         public final LinkedBlockingQueue<MqttConnackPacket> connack;
         public final LinkedBlockingQueue<MqttPublishPacket> publish;
         public final LinkedBlockingQueue<MqttPubackPacket> puback;
