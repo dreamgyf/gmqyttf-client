@@ -31,6 +31,17 @@ public class MqttClient {
                 callback.onConnectFailure(new MqttConnectedException("Already connected"));
             }
         }
+
+        //开启服务
+        controller = new MqttClientController(version);
+        try {
+            controller.start(server, port);
+        } catch (MqttNetworkException e) {
+            if (callback != null) {
+                callback.onConnectFailure(e);
+            }
+        }
+
         //构建报文
         MqttConnectPacket packet = new MqttConnectPacket.Builder()
                 .cleanSession(cleanSession)
@@ -46,15 +57,6 @@ public class MqttClient {
                 .username(username)
                 .password(password)
                 .build(version);
-
-        controller = new MqttClientController(version);
-        try {
-            controller.start(server, port);
-        } catch (MqttNetworkException e) {
-            if (callback != null) {
-                callback.onConnectFailure(e);
-            }
-        }
         controller.connect(packet, callback);
     }
 

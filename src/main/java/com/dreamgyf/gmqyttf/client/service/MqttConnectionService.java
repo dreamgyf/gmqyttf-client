@@ -3,6 +3,7 @@ package com.dreamgyf.gmqyttf.client.service;
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
+import com.dreamgyf.gmqyttf.client.task.MqttConnackTask;
 import com.dreamgyf.gmqyttf.client.task.MqttConnectTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
@@ -22,6 +23,8 @@ public class MqttConnectionService extends MqttService {
 
     private final MqttConnectTask mConnectTask;
 
+    private final MqttConnackTask mConnackTask;
+
     public MqttConnectionService(MqttVersion version, MqttWritableSocket socket, Executor threadPool,
                                  LinkedBlockingQueue<MqttConnectPacket> connectQueue,
                                  LinkedBlockingQueue<MqttConnackPacket> connackQueue) {
@@ -30,16 +33,19 @@ public class MqttConnectionService extends MqttService {
         mConnackQueue = connackQueue;
         mCallbackContainer = new BlockingObject<>();
         mConnectTask = new MqttConnectTask(version, socket, connectQueue, mCallbackContainer);
+        mConnackTask = new MqttConnackTask(version, socket, connackQueue, mCallbackContainer);
     }
 
     @Override
     public void start() {
         runOnNewThread(mConnectTask);
+        runOnNewThread(mConnackTask);
     }
 
     @Override
     public void stop() {
         mConnectTask.stop();
+        mConnackTask.stop();
     }
 
     public void connect(MqttConnectPacket packet, MqttConnectCallback callback) {

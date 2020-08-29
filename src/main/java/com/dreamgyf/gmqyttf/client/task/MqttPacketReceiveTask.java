@@ -20,7 +20,7 @@ public class MqttPacketReceiveTask extends MqttTask {
     }
 
     @Override
-    public void cycle() {
+    public void onLoop() {
         try {
             byte[] header = new byte[1];
             header[0] = readSocketOneBit();

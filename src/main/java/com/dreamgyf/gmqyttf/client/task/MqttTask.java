@@ -28,13 +28,13 @@ public abstract class MqttTask implements Runnable {
 
     @Override
     public void run() {
-        Thread.currentThread().setName("Thread-" + this.getClass().getName());
+        Thread.currentThread().setName("Thread-" + this.getClass().getSimpleName());
         while (isRunning) {
-            cycle();
+            onLoop();
         }
     }
 
-    public abstract void cycle();
+    public abstract void onLoop();
 
     public MqttVersion getVersion() {
         return mVersion;

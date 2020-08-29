@@ -24,7 +24,7 @@ public class MqttConnectTask extends MqttTask {
     }
 
     @Override
-    public void cycle() {
+    public void onLoop() {
         try {
             MqttConnectPacket packet = mConnectQueue.take();
             writeSocket(packet.getPacket());
