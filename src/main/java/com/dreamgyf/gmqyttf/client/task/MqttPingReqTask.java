@@ -37,6 +37,7 @@ public class MqttPingReqTask extends MqttTask {
                 onMqttExceptionThrow(e);
             }
         }
+        Thread.sleep(100);
     }
 
     private boolean needSendPingReq() {
