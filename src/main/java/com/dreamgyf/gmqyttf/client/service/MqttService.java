@@ -1,6 +1,7 @@
 package com.dreamgyf.gmqyttf.client.service;
 
-import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
@@ -15,7 +16,9 @@ public abstract class MqttService {
 
     private final Executor mThreadPool;
 
-    private OnMqttExceptionListener mListener;
+    private OnMqttExceptionListener mExceptionListener;
+
+    private OnMqttPacketSendListener mPacketSendListener;
 
     public MqttService(MqttVersion version, MqttWritableSocket socket, Executor threadPool) {
         mVersion = version;
@@ -37,17 +40,23 @@ public abstract class MqttService {
         return mSocket;
     }
 
-    public OnMqttExceptionListener getOnMqttExceptionListener() {
-        return mListener;
+    public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
+        mExceptionListener = listener;
     }
 
-    public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
-        mListener = listener;
+    public void setOnPacketSendListener(OnMqttPacketSendListener listener) {
+        mPacketSendListener = listener;
     }
 
     protected void onMqttExceptionThrow(MqttException e) {
-        if (mListener != null) {
-            mListener.onMqttExceptionThrow(e);
+        if (mExceptionListener != null) {
+            mExceptionListener.onMqttExceptionThrow(e);
+        }
+    }
+
+    protected void onMqttPacketSend() {
+        if (mPacketSendListener != null) {
+            mPacketSendListener.onPacketSend();
         }
     }
 

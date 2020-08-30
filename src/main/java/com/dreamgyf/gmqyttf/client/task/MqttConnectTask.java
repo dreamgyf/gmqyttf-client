@@ -28,11 +28,12 @@ public class MqttConnectTask extends MqttTask {
         try {
             MqttConnectPacket packet = mConnectQueue.take();
             writeSocket(packet.getPacket());
+            onMqttPacketSend();
         } catch (MqttSocketException e) {
             e.printStackTrace();
             onMqttExceptionThrow(e);
             MqttConnectCallback callback = mCallbackContainer.poll();
-            if(callback != null) {
+            if (callback != null) {
                 callback.onConnectFailure(e);
             }
         }

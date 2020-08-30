@@ -1,7 +1,7 @@
 package com.dreamgyf.gmqyttf.client.service;
 
 import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
-import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttPacketReceiveTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;

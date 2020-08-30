@@ -2,21 +2,20 @@ package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
-import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.service.MqttServiceHub;
 import com.dreamgyf.gmqyttf.client.socket.MqttSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
-import javafx.util.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.*;
 
 public class MqttClientController {
 
     private final MqttVersion mVersion;
+
+    private final short mKeepAliveTime;
 
     private final MqttSocket mSocket;
 
@@ -26,8 +25,9 @@ public class MqttClientController {
 
     private MqttServiceHub mServiceHub;
 
-    public MqttClientController(MqttVersion version) {
+    public MqttClientController(MqttVersion version, short keepAliveTime) {
         mVersion = version;
+        mKeepAliveTime = keepAliveTime;
         mSocket = new MqttSocket();
         mThreadPool = new ThreadPoolExecutor(10, 30,
                 30, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10),
@@ -36,7 +36,7 @@ public class MqttClientController {
 
     public void init() {
         mPacketQueue = new MqttPacketQueue();
-        mServiceHub = new MqttServiceHub(mVersion, mSocket, mThreadPool, mPacketQueue);
+        mServiceHub = new MqttServiceHub(mVersion, mKeepAliveTime, mSocket, mThreadPool, mPacketQueue);
         mServiceHub.init();
     }
 

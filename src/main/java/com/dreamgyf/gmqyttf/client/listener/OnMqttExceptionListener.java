@@ -1,4 +1,4 @@
-package com.dreamgyf.gmqyttf.client.exception.listener;
+package com.dreamgyf.gmqyttf.client.listener;
 
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
 

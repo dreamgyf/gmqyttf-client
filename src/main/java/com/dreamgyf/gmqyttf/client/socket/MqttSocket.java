@@ -65,6 +65,9 @@ public class MqttSocket implements MqttWritableSocket {
 
     @Override
     public byte[] readBit(int bitCount) throws MqttSocketException {
+        if (bitCount <= 0) {
+            return new byte[0];
+        }
         synchronized (mReadLock) {
             if (isConnected()) {
                 try {

@@ -1,13 +1,13 @@
 package com.dreamgyf.gmqyttf.client.service;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
-import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
 import com.dreamgyf.gmqyttf.client.task.MqttConnackTask;
 import com.dreamgyf.gmqyttf.client.task.MqttConnectTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.exception.UnknownException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnackPacket;
@@ -49,6 +49,12 @@ public class MqttConnectionService extends MqttService {
         super.setOnMqttExceptionListener(listener);
         mConnectTask.setOnMqttExceptionListener(listener);
         mConnackTask.setOnMqttExceptionListener(listener);
+    }
+
+    @Override
+    public void setOnPacketSendListener(OnMqttPacketSendListener listener) {
+        super.setOnPacketSendListener(listener);
+        mConnectTask.setOnPacketSendListener(listener);
     }
 
     @Override

@@ -4,6 +4,8 @@ import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 
 public interface MqttWritableSocket {
     void write(byte[] packet) throws MqttSocketException;
+
     byte readOneBit() throws MqttSocketException;
+
     byte[] readBit(int bitCount) throws MqttSocketException;
 }

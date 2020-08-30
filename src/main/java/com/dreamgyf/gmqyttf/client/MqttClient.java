@@ -1,7 +1,7 @@
 package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
-import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.exception.net.IllegalServerException;
@@ -23,7 +23,7 @@ public class MqttClient {
 
     public void connect(String server, int port, MqttConnectCallback callback) {
         if (server == null || server.equals("") || port == 0) {
-            if(callback != null) {
+            if (callback != null) {
                 callback.onConnectFailure(new IllegalServerException("Illegal server or port"));
             }
         }
@@ -62,7 +62,7 @@ public class MqttClient {
     }
 
     private void initController() {
-        controller = new MqttClientController(version);
+        controller = new MqttClientController(version, keepAliveTime);
         controller.init();
         controller.setOnMqttExceptionListener(new OnMqttExceptionListener() {
             @Override
