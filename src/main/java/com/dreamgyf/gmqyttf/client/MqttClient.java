@@ -1,6 +1,7 @@
 package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
+import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.exception.net.IllegalServerException;
@@ -33,7 +34,7 @@ public class MqttClient {
         }
 
         //开启服务
-        controller = new MqttClientController(version);
+        initController();
         try {
             controller.start(server, port);
         } catch (MqttNetworkException e) {
@@ -58,6 +59,24 @@ public class MqttClient {
                 .password(password)
                 .build(version);
         controller.connect(packet, callback);
+    }
+
+    private void initController() {
+        controller = new MqttClientController(version);
+        controller.init();
+        controller.setOnMqttExceptionListener(new OnMqttExceptionListener() {
+            @Override
+            public void onMqttExceptionThrow(MqttException e) {
+                isConnected = false;
+                controller.stop();
+                System.err.println("出现异常，断开连接");
+            }
+        });
+    }
+
+    public void disconnect() {
+        controller.disconnect();
+        controller.stop();
     }
 
     public boolean isConnected() {

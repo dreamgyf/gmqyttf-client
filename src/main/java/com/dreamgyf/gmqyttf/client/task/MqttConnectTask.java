@@ -24,12 +24,10 @@ public class MqttConnectTask extends MqttTask {
     }
 
     @Override
-    public void onLoop() {
+    public void onLoop() throws InterruptedException {
         try {
             MqttConnectPacket packet = mConnectQueue.take();
             writeSocket(packet.getPacket());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } catch (MqttSocketException e) {
             e.printStackTrace();
             onMqttExceptionThrow(e);

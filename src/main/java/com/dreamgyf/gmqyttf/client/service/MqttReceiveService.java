@@ -1,6 +1,7 @@
 package com.dreamgyf.gmqyttf.client.service;
 
 import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
+import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttPacketReceiveTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
@@ -9,11 +10,24 @@ import java.util.concurrent.Executor;
 
 public class MqttReceiveService extends MqttService {
 
-    private final MqttPacketReceiveTask mReceiveTask;
+    private final MqttPacketQueue.Response mPacketRespQueue;
+
+    private MqttPacketReceiveTask mReceiveTask;
 
     public MqttReceiveService(MqttVersion version, MqttWritableSocket socket, Executor threadPool, MqttPacketQueue.Response packetRespQueue) {
         super(version, socket, threadPool);
-        mReceiveTask = new MqttPacketReceiveTask(version, socket, packetRespQueue);
+        mPacketRespQueue = packetRespQueue;
+    }
+
+    @Override
+    public void initTask() {
+        mReceiveTask = new MqttPacketReceiveTask(getVersion(), getSocket(), mPacketRespQueue);
+    }
+
+    @Override
+    public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
+        super.setOnMqttExceptionListener(listener);
+        mReceiveTask.setOnMqttExceptionListener(listener);
     }
 
     @Override
@@ -23,6 +37,5 @@ public class MqttReceiveService extends MqttService {
 
     @Override
     public void stop() {
-        mReceiveTask.stop();
     }
 }

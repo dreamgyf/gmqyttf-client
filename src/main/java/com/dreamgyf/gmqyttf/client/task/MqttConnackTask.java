@@ -27,14 +27,10 @@ public class MqttConnackTask extends MqttTask {
     }
 
     @Override
-    public void onLoop() {
-        try {
-            MqttConnackPacket packet = mConnackQueue.take();
-            MqttConnectCallback callback = mCallbackContainer.poll();
-            handlerPacket(packet, callback);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    public void onLoop() throws InterruptedException {
+        MqttConnackPacket packet = mConnackQueue.take();
+        MqttConnectCallback callback = mCallbackContainer.poll();
+        handlerPacket(packet, callback);
     }
 
     private void handlerPacket(MqttConnackPacket packet, MqttConnectCallback callback) {
@@ -78,8 +74,11 @@ public class MqttConnackTask extends MqttTask {
                 exception = new UnknownException();
             }
         }
-        if (callback != null && exception != null) {
-            callback.onConnectFailure(exception);
+        if (exception != null) {
+            onMqttExceptionThrow(exception);
+            if (callback != null) {
+                callback.onConnectFailure(exception);
+            }
         }
     }
 }

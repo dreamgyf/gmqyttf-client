@@ -3,6 +3,7 @@ package com.dreamgyf.gmqyttf.client.service;
 import com.dreamgyf.gmqyttf.client.exception.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
+import com.dreamgyf.gmqyttf.common.exception.MqttException;
 
 import java.util.concurrent.Executor;
 
@@ -22,8 +23,18 @@ public abstract class MqttService {
         mThreadPool = threadPool;
     }
 
+    public abstract void initTask();
+
     protected void runOnNewThread(Runnable runnable) {
         mThreadPool.execute(runnable);
+    }
+
+    public MqttVersion getVersion() {
+        return mVersion;
+    }
+
+    protected MqttWritableSocket getSocket() {
+        return mSocket;
     }
 
     public OnMqttExceptionListener getOnMqttExceptionListener() {
@@ -32,6 +43,12 @@ public abstract class MqttService {
 
     public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
         mListener = listener;
+    }
+
+    protected void onMqttExceptionThrow(MqttException e) {
+        if (mListener != null) {
+            mListener.onMqttExceptionThrow(e);
+        }
     }
 
     public abstract void start();
