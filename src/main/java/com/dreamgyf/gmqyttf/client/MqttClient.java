@@ -1,19 +1,25 @@
 package com.dreamgyf.gmqyttf.client;
 
+import com.dreamgyf.gmqyttf.client.callback.MqttClientCallback;
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
-import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
+import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.exception.net.IllegalServerException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttConnectedException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
+import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
+import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.regex.Pattern;
 
 public class MqttClient {
 
+    private MqttRandomPacketIdGenerator idGenerator;
+
     private MqttClientController controller;
+
+    private MqttClientCallback clientCallback;
 
     private boolean isConnected;
 
@@ -32,6 +38,8 @@ public class MqttClient {
                 callback.onConnectFailure(new MqttConnectedException("Already connected"));
             }
         }
+
+        idGenerator = MqttRandomPacketIdGenerator.create();
 
         //开启服务
         initController();
@@ -62,17 +70,41 @@ public class MqttClient {
     }
 
     private void initController() {
-        controller = new MqttClientController(version, keepAliveTime);
+        controller = new MqttClientController(version, keepAliveTime, idGenerator);
         controller.init();
-        controller.setOnMqttExceptionListener(new OnMqttExceptionListener() {
-            @Override
-            public void onMqttExceptionThrow(MqttException e) {
-                isConnected = false;
-                controller.stop();
-                System.err.println("出现异常，断开连接");
+        controller.setOnMqttExceptionListener((e) -> {
+            isConnected = false;
+            controller.stop();
+            if (clientCallback != null) {
+                clientCallback.onConnectionException(e);
+            }
+        });
+        controller.setOnMqttMessageReceivedListener((topic, message) -> {
+            if (clientCallback != null) {
+                clientCallback.onMessageReceived(topic, message);
             }
         });
     }
+
+    public void publish(String topic, String message) {
+        publish(topic, message, new MqttPublishOption());
+    }
+
+    private void publish(String topic, String message, MqttPublishOption mqttPublishOption) {
+        MqttPublishPacket.Builder builder = new MqttPublishPacket.Builder()
+                .DUP(mqttPublishOption.getDUP())
+                .QoS(mqttPublishOption.getQoS())
+                .RETAIN(mqttPublishOption.getRETAIN())
+                .topic(topic)
+                .message(message);
+
+        if (mqttPublishOption.getQoS() > 0) {
+            builder.id(idGenerator.next());
+        }
+
+        controller.publish(builder.build(version));
+    }
+
 
     public void disconnect() {
         controller.disconnect();
@@ -81,6 +113,10 @@ public class MqttClient {
 
     public boolean isConnected() {
         return isConnected;
+    }
+
+    public void setCallback(MqttClientCallback callback) {
+        this.clientCallback = callback;
     }
 
     /**

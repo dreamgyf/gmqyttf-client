@@ -5,10 +5,9 @@ import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
-import com.dreamgyf.gmqyttf.client.task.MqttConnackTask;
-import com.dreamgyf.gmqyttf.client.task.MqttConnectTask;
+import com.dreamgyf.gmqyttf.client.task.connection.MqttConnackTask;
+import com.dreamgyf.gmqyttf.client.task.connection.MqttConnectTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.UnknownException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnackPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
@@ -76,10 +75,6 @@ public class MqttConnectionService extends MqttService {
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                onMqttExceptionThrow(new UnknownException());
-                if (callback != null) {
-                    callback.onConnectFailure(new UnknownException());
-                }
             }
         });
     }

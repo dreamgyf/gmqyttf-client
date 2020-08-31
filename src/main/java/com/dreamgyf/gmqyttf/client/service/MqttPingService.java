@@ -4,8 +4,8 @@ import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
-import com.dreamgyf.gmqyttf.client.task.MqttPingReqTask;
-import com.dreamgyf.gmqyttf.client.task.MqttPingRespTask;
+import com.dreamgyf.gmqyttf.client.task.ping.MqttPingReqTask;
+import com.dreamgyf.gmqyttf.client.task.ping.MqttPingRespTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.packet.MqttPingrespPacket;
 
