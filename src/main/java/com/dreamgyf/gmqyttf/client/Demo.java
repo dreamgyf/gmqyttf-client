@@ -29,6 +29,7 @@ class Demo {
             @Override
             public void onConnectSuccess() {
                 System.out.println("连接成功");
+                client.publish("/dreamgyf/test", "测试publish");
             }
 
             @Override

@@ -36,7 +36,6 @@ public class MqttClientController {
     private MqttConnectionService mConnectionService;
     private MqttPingService mPingService;
     private MqttMessageService mMessageService;
-
     /**********************************************************
      * Service组
      ***********************************************************/
