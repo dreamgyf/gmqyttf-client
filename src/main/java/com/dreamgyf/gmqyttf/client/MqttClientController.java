@@ -46,8 +46,8 @@ public class MqttClientController {
         mKeepAliveTime = keepAliveTime;
         mIdGenerator = idGenerator;
         mSocket = new MqttSocket();
-        mThreadPool = new ThreadPoolExecutor(10, 30,
-                30, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(10),
+        mThreadPool = new ThreadPoolExecutor(20, 50,
+                30, TimeUnit.SECONDS, new SynchronousQueue<>(true),
                 Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
