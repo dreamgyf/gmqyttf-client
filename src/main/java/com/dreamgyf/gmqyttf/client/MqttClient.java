@@ -9,8 +9,13 @@ import com.dreamgyf.gmqyttf.common.exception.net.MqttConnectedException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
+import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
+import com.dreamgyf.gmqyttf.common.packet.MqttUnsubscribePacket;
+import com.dreamgyf.gmqyttf.common.params.MqttTopic;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class MqttClient {
@@ -79,6 +84,11 @@ public class MqttClient {
                 clientCallback.onConnectionException(e);
             }
         });
+        controller.setOnMqttSubscribeFailureListener((topic) -> {
+            if (clientCallback != null) {
+                clientCallback.onSubscribeFailure(topic);
+            }
+        });
         controller.setOnMqttMessageReceivedListener((topic, message) -> {
             if (clientCallback != null) {
                 clientCallback.onMessageReceived(topic, message);
@@ -90,7 +100,7 @@ public class MqttClient {
         publish(topic, message, new MqttPublishOption());
     }
 
-    private void publish(String topic, String message, MqttPublishOption mqttPublishOption) {
+    public void publish(String topic, String message, MqttPublishOption mqttPublishOption) {
         MqttPublishPacket.Builder builder = new MqttPublishPacket.Builder()
                 .DUP(mqttPublishOption.getDUP())
                 .QoS(mqttPublishOption.getQoS())
@@ -105,6 +115,31 @@ public class MqttClient {
         controller.publish(builder.build(version));
     }
 
+    public void subscribe(MqttTopic... topics) {
+        subscribe(Arrays.asList(topics));
+    }
+
+    public void subscribe(List<MqttTopic> topics) {
+        MqttSubscribePacket packet = new MqttSubscribePacket.Builder()
+                .addAllTopic(topics)
+                .id(idGenerator.next())
+                .build(version);
+
+        controller.subscribe(packet);
+    }
+
+    public void unsubscribe(String... topics) {
+        unsubscribe(Arrays.asList(topics));
+    }
+
+    public void unsubscribe(List<String> topics) {
+        MqttUnsubscribePacket packet = new MqttUnsubscribePacket.Builder()
+                .addAllTopic(topics)
+                .id(idGenerator.next())
+                .build(version);
+
+        controller.unsubscribe(packet);
+    }
 
     public void disconnect() {
         controller.disconnect();

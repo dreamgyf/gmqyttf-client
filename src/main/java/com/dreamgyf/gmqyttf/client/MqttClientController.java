@@ -5,12 +5,15 @@ import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttMessageReceivedListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttSubscribeFailureListener;
 import com.dreamgyf.gmqyttf.client.service.*;
 import com.dreamgyf.gmqyttf.client.socket.MqttSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
+import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
+import com.dreamgyf.gmqyttf.common.packet.MqttUnsubscribePacket;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.concurrent.*;
@@ -36,6 +39,7 @@ public class MqttClientController {
     private MqttConnectionService mConnectionService;
     private MqttPingService mPingService;
     private MqttMessageService mMessageService;
+    private MqttSubscriptionService mSubscriptionService;
 
     /**********************************************************
      * Service组
@@ -66,11 +70,15 @@ public class MqttClientController {
                 mPacketQueue.request.pubrel, mPacketQueue.request.pubcomp, mPacketQueue.response.publish,
                 mPacketQueue.response.puback, mPacketQueue.response.pubrec, mPacketQueue.response.pubrel,
                 mPacketQueue.response.pubcomp);
+        mSubscriptionService = new MqttSubscriptionService(mVersion, mSocket, mThreadPool, mIdGenerator,
+                mPacketQueue.request.subscribe, mPacketQueue.response.suback,
+                mPacketQueue.request.unsubscribe, mPacketQueue.response.unsuback);
 
         mReceiveService.initTask();
         mConnectionService.initTask();
         mPingService.initTask();
         mMessageService.initTask();
+        mSubscriptionService.initTask();
 
         OnMqttPacketSendListener packetSendListener = () -> {
             mPingService.updateLastReqTime();
@@ -78,6 +86,7 @@ public class MqttClientController {
         mConnectionService.setOnPacketSendListener(packetSendListener);
         mPingService.setOnPacketSendListener(packetSendListener);
         mMessageService.setOnPacketSendListener(packetSendListener);
+        mSubscriptionService.setOnPacketSendListener(packetSendListener);
     }
 
     public void start(String host, int port) throws MqttNetworkException {
@@ -90,6 +99,7 @@ public class MqttClientController {
         mConnectionService.start();
         mPingService.start();
         mMessageService.start();
+        mSubscriptionService.start();
     }
 
     public void stop() {
@@ -103,6 +113,7 @@ public class MqttClientController {
         mConnectionService.stop();
         mPingService.stop();
         mMessageService.stop();
+        mSubscriptionService.stop();
     }
 
     private void clear() {
@@ -117,6 +128,14 @@ public class MqttClientController {
         mMessageService.publish(packet);
     }
 
+    public void subscribe(MqttSubscribePacket packet) {
+        mSubscriptionService.subscribe(packet);
+    }
+
+    public void unsubscribe(MqttUnsubscribePacket packet) {
+        mSubscriptionService.unsubscribe(packet);
+    }
+
     public void disconnect() {
         mConnectionService.disconnect();
     }
@@ -126,6 +145,11 @@ public class MqttClientController {
         mConnectionService.setOnMqttExceptionListener(listener);
         mPingService.setOnMqttExceptionListener(listener);
         mMessageService.setOnMqttExceptionListener(listener);
+        mSubscriptionService.setOnMqttExceptionListener(listener);
+    }
+
+    public void setOnMqttSubscribeFailureListener(OnMqttSubscribeFailureListener listener) {
+        mSubscriptionService.setOnMqttSubscribeFailureListener(listener);
     }
 
     public void setOnMqttMessageReceivedListener(OnMqttMessageReceivedListener listener) {

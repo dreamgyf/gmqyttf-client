@@ -2,8 +2,10 @@ package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttClientCallback;
 import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
+import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
+import com.dreamgyf.gmqyttf.common.params.MqttTopic;
 
 class Demo {
 
@@ -20,6 +22,11 @@ class Demo {
             }
 
             @Override
+            public void onSubscribeFailure(MqttTopic mqttTopic) {
+                System.err.println("订阅异常");
+            }
+
+            @Override
             public void onMessageReceived(String topic, String message) {
                 System.out.println("收到消息, topic: " + topic + " message: " + message);
             }
@@ -29,7 +36,8 @@ class Demo {
             @Override
             public void onConnectSuccess() {
                 System.out.println("连接成功");
-                client.publish("/dreamgyf/test", "测试publish");
+                client.subscribe(new MqttTopic("/dreamgyf/test", 2));
+                client.publish("/dreamgyf/test", "测试publish", new MqttPublishOption().QoS(2));
             }
 
             @Override
