@@ -4,17 +4,21 @@ import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttMessageReceivedListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
+import com.dreamgyf.gmqyttf.client.task.message.recv.*;
 import com.dreamgyf.gmqyttf.client.task.message.send.*;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class MqttMessageService extends MqttService {
 
     private final MqttRandomPacketIdGenerator mIdGenerator;
+
+    private final ConcurrentHashMap<Short, MqttPublishPacket> mMappingTable;
 
     private final LinkedBlockingQueue<MqttPublishPacket> mPublishSendQueue;
 
@@ -44,9 +48,21 @@ public class MqttMessageService extends MqttService {
     private MqttPubrecRecvTask mPubrecRecvTask;
     private MqttPubrelSendTask mPubrelSendTask;
     private MqttPubcompRecvTask mPubcompRecvTask;
-
     /**********************************************************
      * 发送消息Task组
+     ***********************************************************/
+
+    /**********************************************************
+     * 接收消息Task组
+     ***********************************************************/
+    private MqttPublishRecvTask mPublishRecvTask;
+    private MqttPubackSendTask mPubackSendTask;
+    private MqttPubrecSendTask mPubrecSendTask;
+    private MqttPubrelRecvTask mPubrelRecvTask;
+    private MqttPubcompSendTask mPubcompSendTask;
+
+    /**********************************************************
+     * 接收消息Task组
      ***********************************************************/
 
     public MqttMessageService(MqttVersion version, MqttWritableSocket socket, Executor threadPool,
@@ -63,6 +79,7 @@ public class MqttMessageService extends MqttService {
                               LinkedBlockingQueue<MqttPubcompPacket> pubcompRecvQueue) {
         super(version, socket, threadPool);
         mIdGenerator = idGenerator;
+        mMappingTable = new ConcurrentHashMap<>();
         mPublishSendQueue = publishSendQueue;
         mPubackSendQueue = pubackSendQueue;
         mPubrecSendQueue = pubrecSendQueue;
@@ -78,14 +95,23 @@ public class MqttMessageService extends MqttService {
     @Override
     public void initTask() {
         initSendTask();
+        initRecvTask();
     }
 
     private void initSendTask() {
         mPublishSendTask = new MqttPublishSendTask(getVersion(), getSocket(), mPublishSendQueue);
         mPubackRecvTask = new MqttPubackRecvTask(getVersion(), getSocket(), mIdGenerator, mPubackRecvQueue);
-        mPubrecRecvTask = new MqttPubrecRecvTask(getVersion(), getSocket(), mPubrecRecvQueue, mPubrelSendQueue);
+        mPubrecRecvTask = new MqttPubrecRecvTask(getVersion(), getSocket(), mIdGenerator, mPubrecRecvQueue, mPubrelSendQueue);
         mPubrelSendTask = new MqttPubrelSendTask(getVersion(), getSocket(), mPubrelSendQueue);
         mPubcompRecvTask = new MqttPubcompRecvTask(getVersion(), getSocket(), mIdGenerator, mPubcompRecvQueue);
+    }
+
+    private void initRecvTask() {
+        mPublishRecvTask = new MqttPublishRecvTask(getVersion(), getSocket(), mMappingTable, mPublishRecvQueue, mPubackSendQueue, mPubrecSendQueue);
+        mPubackSendTask = new MqttPubackSendTask(getVersion(), getSocket(), mMappingTable, mPubackSendQueue);
+        mPubrecSendTask = new MqttPubrecSendTask(getVersion(), getSocket(), mPubrecSendQueue);
+        mPubrelRecvTask = new MqttPubrelRecvTask(getVersion(), getSocket(), mMappingTable, mPubrelRecvQueue, mPubcompSendQueue);
+        mPubcompSendTask = new MqttPubcompSendTask(getVersion(), getSocket(), mMappingTable, mPubcompSendQueue);
     }
 
     @Override
@@ -95,6 +121,12 @@ public class MqttMessageService extends MqttService {
         runOnNewThread(mPubrecRecvTask);
         runOnNewThread(mPubrelSendTask);
         runOnNewThread(mPubcompRecvTask);
+
+        runOnNewThread(mPublishRecvTask);
+        runOnNewThread(mPubackSendTask);
+        runOnNewThread(mPubrecSendTask);
+        runOnNewThread(mPubrelRecvTask);
+        runOnNewThread(mPubcompSendTask);
     }
 
     @Override
@@ -120,6 +152,12 @@ public class MqttMessageService extends MqttService {
         mPubrecRecvTask.setOnMqttExceptionListener(listener);
         mPubrelSendTask.setOnMqttExceptionListener(listener);
         mPubcompRecvTask.setOnMqttExceptionListener(listener);
+
+        mPublishRecvTask.setOnMqttExceptionListener(listener);
+        mPubackSendTask.setOnMqttExceptionListener(listener);
+        mPubrecSendTask.setOnMqttExceptionListener(listener);
+        mPubrelRecvTask.setOnMqttExceptionListener(listener);
+        mPubcompSendTask.setOnMqttExceptionListener(listener);
     }
 
     @Override
@@ -127,9 +165,15 @@ public class MqttMessageService extends MqttService {
         super.setOnPacketSendListener(listener);
         mPublishSendTask.setOnPacketSendListener(listener);
         mPubrelSendTask.setOnPacketSendListener(listener);
+
+        mPubackSendTask.setOnPacketSendListener(listener);
+        mPubrecSendTask.setOnPacketSendListener(listener);
+        mPubcompSendTask.setOnPacketSendListener(listener);
     }
 
     public void setOnMqttMessageReceivedListener(OnMqttMessageReceivedListener listener) {
-
+        mPublishRecvTask.setOnMqttMessageReceivedListener(listener);
+        mPubackSendTask.setOnMqttMessageReceivedListener(listener);
+        mPubcompSendTask.setOnMqttMessageReceivedListener(listener);
     }
 }
