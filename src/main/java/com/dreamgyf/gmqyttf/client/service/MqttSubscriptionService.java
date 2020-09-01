@@ -4,14 +4,18 @@ import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttSubscribeFailureListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
+import com.dreamgyf.gmqyttf.client.task.subscription.MqttSubackTask;
 import com.dreamgyf.gmqyttf.client.task.subscription.MqttSubscribeTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubackPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttUnsubackPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttUnsubscribePacket;
+import com.dreamgyf.gmqyttf.common.params.MqttTopic;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -19,15 +23,19 @@ public class MqttSubscriptionService extends MqttService {
 
     private final MqttRandomPacketIdGenerator mIdGenerator;
 
-    public final LinkedBlockingQueue<MqttSubscribePacket> mSubscribeQueue;
+    private final LinkedBlockingQueue<MqttSubscribePacket> mSubscribeQueue;
 
-    public final LinkedBlockingQueue<MqttSubackPacket> mSubackQueue;
+    private final LinkedBlockingQueue<MqttSubackPacket> mSubackQueue;
 
-    public final LinkedBlockingQueue<MqttUnsubscribePacket> mUnsubscribeQueue;
+    private final ConcurrentHashMap<Short, List<MqttTopic>> mSubscribeMappingTable;
 
-    public final LinkedBlockingQueue<MqttUnsubackPacket> mUnsubackQueue;
+    private final LinkedBlockingQueue<MqttUnsubscribePacket> mUnsubscribeQueue;
 
-    public MqttSubscribeTask mSubscribeTask;
+    private final LinkedBlockingQueue<MqttUnsubackPacket> mUnsubackQueue;
+
+    private MqttSubscribeTask mSubscribeTask;
+
+    private MqttSubackTask mSubackTask;
 
     public MqttSubscriptionService(MqttVersion version, MqttWritableSocket socket, Executor threadPool,
                                    MqttRandomPacketIdGenerator idGenerator,
@@ -39,13 +47,15 @@ public class MqttSubscriptionService extends MqttService {
         mIdGenerator = idGenerator;
         mSubscribeQueue = subscribeQueue;
         mSubackQueue = subackQueue;
+        mSubscribeMappingTable = new ConcurrentHashMap<>();
         mUnsubscribeQueue = unsubscribeQueue;
         mUnsubackQueue = unsubackQueue;
     }
 
     @Override
     public void initTask() {
-        mSubscribeTask = new MqttSubscribeTask(getVersion(), getSocket(), mSubscribeQueue);
+        mSubscribeTask = new MqttSubscribeTask(getVersion(), getSocket(), mSubscribeMappingTable, mSubscribeQueue);
+        mSubackTask = new MqttSubackTask(getVersion(), getSocket(), mIdGenerator, mSubscribeMappingTable, mSubackQueue);
     }
 
     @Override
@@ -71,7 +81,7 @@ public class MqttSubscriptionService extends MqttService {
     }
 
     public void setOnMqttSubscribeFailureListener(OnMqttSubscribeFailureListener listener) {
-
+        mSubackTask.setOnMqttSubscribeFailureListener(listener);
     }
 
     public void subscribe(MqttSubscribePacket packet) {
