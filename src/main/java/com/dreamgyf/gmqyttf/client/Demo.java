@@ -18,12 +18,12 @@ class Demo {
         client.setCallback(new MqttClientCallback() {
             @Override
             public void onConnectionException(MqttException e) {
-                System.err.println("连接异常");
+                System.err.println("连接异常: " + e + " " + e.getMessage());
             }
 
             @Override
             public void onSubscribeFailure(MqttTopic mqttTopic) {
-                System.err.println("订阅异常");
+                System.err.println("订阅失败: " + mqttTopic.getTopic() + " QoS: " + mqttTopic.getQoS());
             }
 
             @Override
