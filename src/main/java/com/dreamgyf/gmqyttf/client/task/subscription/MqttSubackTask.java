@@ -5,7 +5,7 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttSubackReturnCode;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.packet.MqttPacketException;
+import com.dreamgyf.gmqyttf.common.exception.packet.InvalidPacketIdException;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubackPacket;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
@@ -38,13 +38,13 @@ public class MqttSubackTask extends MqttTask {
     public void onLoop() throws InterruptedException {
         MqttSubackPacket packet = mSubackQueue.take();
         if (!mIdGenerator.remove(packet.getId())) {
-            onMqttExceptionThrow(new MqttPacketException());
+            onMqttExceptionThrow(new InvalidPacketIdException());
         } else {
             List<MqttTopic> topicList = mSubscribeMappingTable.remove(packet.getId());
             List<Byte> codeList = packet.getReturnCodeList();
 
             if (topicList == null || topicList.size() != codeList.size()) {
-                onMqttExceptionThrow(new MqttPacketException());
+                onMqttExceptionThrow(new InvalidPacketIdException());
             } else {
                 for (int i = 0; i < codeList.size(); i++) {
                     if (codeList.get(i) == MqttSubackReturnCode.V3_1_1.FAILURE) {
@@ -52,7 +52,6 @@ public class MqttSubackTask extends MqttTask {
                     }
                 }
             }
-
         }
     }
 

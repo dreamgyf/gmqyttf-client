@@ -3,7 +3,7 @@ package com.dreamgyf.gmqyttf.client.task.message.recv;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.packet.MqttPacketException;
+import com.dreamgyf.gmqyttf.common.exception.packet.InvalidPacketIdException;
 import com.dreamgyf.gmqyttf.common.packet.MqttPubcompPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttPubrelPacket;
@@ -34,7 +34,7 @@ public class MqttPubrelRecvTask extends MqttTask {
         MqttPubrelPacket packet = mPubrelQueue.take();
         short id = packet.getId();
         if (!mMappingTable.containsKey(id)) {
-            onMqttExceptionThrow(new MqttPacketException());
+            onMqttExceptionThrow(new InvalidPacketIdException());
         } else {
             mPubcompQueue.put(new MqttPubcompPacket.Builder()
                     .id(id)

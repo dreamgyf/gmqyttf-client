@@ -1,33 +1,32 @@
-package com.dreamgyf.gmqyttf.client.task.message.send;
+package com.dreamgyf.gmqyttf.client.task.subscription;
 
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.packet.InvalidPacketIdException;
-import com.dreamgyf.gmqyttf.common.packet.MqttPubackPacket;
+import com.dreamgyf.gmqyttf.common.packet.MqttUnsubackPacket;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class MqttPubackRecvTask extends MqttTask {
+public class MqttUnsubackTask extends MqttTask {
 
     private final MqttRandomPacketIdGenerator mIdGenerator;
 
-    private final LinkedBlockingQueue<MqttPubackPacket> mPubackQueue;
+    private final LinkedBlockingQueue<MqttUnsubackPacket> mUnsubackQueue;
 
-    public MqttPubackRecvTask(MqttVersion version, MqttWritableSocket socket,
-                              MqttRandomPacketIdGenerator idGenerator,
-                              LinkedBlockingQueue<MqttPubackPacket> pubackQueue) {
+    public MqttUnsubackTask(MqttVersion version, MqttWritableSocket socket,
+                            MqttRandomPacketIdGenerator idGenerator,
+                            LinkedBlockingQueue<MqttUnsubackPacket> unsubackQueue) {
         super(version, socket);
         mIdGenerator = idGenerator;
-        mPubackQueue = pubackQueue;
+        mUnsubackQueue = unsubackQueue;
     }
 
     @Override
     public void onLoop() throws InterruptedException {
-        MqttPubackPacket packet = mPubackQueue.take();
-        short id = packet.getId();
-        if (!mIdGenerator.remove(id)) {
+        MqttUnsubackPacket packet = mUnsubackQueue.take();
+        if (!mIdGenerator.remove(packet.getId())) {
             onMqttExceptionThrow(new InvalidPacketIdException());
         }
     }

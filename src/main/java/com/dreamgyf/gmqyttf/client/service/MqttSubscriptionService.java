@@ -6,6 +6,8 @@ import com.dreamgyf.gmqyttf.client.listener.OnMqttSubscribeFailureListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.subscription.MqttSubackTask;
 import com.dreamgyf.gmqyttf.client.task.subscription.MqttSubscribeTask;
+import com.dreamgyf.gmqyttf.client.task.subscription.MqttUnsubackTask;
+import com.dreamgyf.gmqyttf.client.task.subscription.MqttUnsubscribeTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubackPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
@@ -37,6 +39,10 @@ public class MqttSubscriptionService extends MqttService {
 
     private MqttSubackTask mSubackTask;
 
+    private MqttUnsubscribeTask mUnsubscribeTask;
+
+    private MqttUnsubackTask mUnsubackTask;
+
     public MqttSubscriptionService(MqttVersion version, MqttWritableSocket socket, Executor threadPool,
                                    MqttRandomPacketIdGenerator idGenerator,
                                    LinkedBlockingQueue<MqttSubscribePacket> subscribeQueue,
@@ -56,11 +62,16 @@ public class MqttSubscriptionService extends MqttService {
     public void initTask() {
         mSubscribeTask = new MqttSubscribeTask(getVersion(), getSocket(), mSubscribeMappingTable, mSubscribeQueue);
         mSubackTask = new MqttSubackTask(getVersion(), getSocket(), mIdGenerator, mSubscribeMappingTable, mSubackQueue);
+        mUnsubscribeTask = new MqttUnsubscribeTask(getVersion(), getSocket(), mUnsubscribeQueue);
+        mUnsubackTask = new MqttUnsubackTask(getVersion(), getSocket(), mIdGenerator, mUnsubackQueue);
     }
 
     @Override
     public void start() {
         runOnNewThread(mSubscribeTask);
+        runOnNewThread(mSubackTask);
+        runOnNewThread(mUnsubscribeTask);
+        runOnNewThread(mUnsubackTask);
     }
 
     @Override
@@ -72,12 +83,16 @@ public class MqttSubscriptionService extends MqttService {
     public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
         super.setOnMqttExceptionListener(listener);
         mSubscribeTask.setOnMqttExceptionListener(listener);
+        mSubackTask.setOnMqttExceptionListener(listener);
+        mUnsubscribeTask.setOnMqttExceptionListener(listener);
+        mUnsubackTask.setOnMqttExceptionListener(listener);
     }
 
     @Override
     public void setOnPacketSendListener(OnMqttPacketSendListener listener) {
         super.setOnPacketSendListener(listener);
         mSubscribeTask.setOnPacketSendListener(listener);
+        mUnsubscribeTask.setOnPacketSendListener(listener);
     }
 
     public void setOnMqttSubscribeFailureListener(OnMqttSubscribeFailureListener listener) {

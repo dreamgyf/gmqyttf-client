@@ -5,7 +5,7 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
-import com.dreamgyf.gmqyttf.common.exception.packet.MqttPacketException;
+import com.dreamgyf.gmqyttf.common.exception.packet.InvalidPacketIdException;
 import com.dreamgyf.gmqyttf.common.packet.MqttPubackPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
 
@@ -33,7 +33,7 @@ public class MqttPubackSendTask extends MqttTask {
         MqttPubackPacket pubackPacket = mPubackQueue.take();
         MqttPublishPacket publishPacket = mMappingTable.remove(pubackPacket.getId());
         if (publishPacket == null) {
-            onMqttExceptionThrow(new MqttPacketException());
+            onMqttExceptionThrow(new InvalidPacketIdException());
         } else {
             try {
                 writeSocket(pubackPacket.getPacket());
