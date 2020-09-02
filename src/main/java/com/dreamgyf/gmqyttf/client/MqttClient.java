@@ -144,6 +144,7 @@ public class MqttClient {
     public void disconnect() {
         controller.disconnect();
         controller.stop();
+        isConnected = false;
     }
 
     public boolean isConnected() {
