@@ -1,8 +1,6 @@
 package com.dreamgyf.gmqyttf.client.task.connection;
 
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
-import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
@@ -14,14 +12,10 @@ public class MqttConnectTask extends MqttTask {
 
     private final LinkedBlockingQueue<MqttConnectPacket> mConnectQueue;
 
-    private final BlockingObject<MqttConnectCallback> mCallbackContainer;
-
     public MqttConnectTask(MqttVersion version, MqttWritableSocket socket,
-                           LinkedBlockingQueue<MqttConnectPacket> connectQueue,
-                           BlockingObject<MqttConnectCallback> callbackContainer) {
+                           LinkedBlockingQueue<MqttConnectPacket> connectQueue) {
         super(version, socket);
         mConnectQueue = connectQueue;
-        mCallbackContainer = callbackContainer;
     }
 
     @Override
@@ -33,10 +27,6 @@ public class MqttConnectTask extends MqttTask {
         } catch (MqttSocketException e) {
             e.printStackTrace();
             onMqttExceptionThrow(e);
-            MqttConnectCallback callback = mCallbackContainer.poll();
-            if (callback != null) {
-                callback.onConnectFailure(e);
-            }
         }
     }
 

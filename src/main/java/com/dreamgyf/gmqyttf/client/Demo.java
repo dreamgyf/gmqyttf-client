@@ -1,7 +1,6 @@
 package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttClientCallback;
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.MqttException;
@@ -33,19 +32,9 @@ class Demo {
             }
         });
 
-        client.connect("broker.emqx.io", 1883, new MqttConnectCallback() {
-            @Override
-            public void onConnectSuccess() {
-                System.out.println("连接成功");
-                client.subscribe(new MqttTopic("/dreamgyf/test", 2));
-                client.publish("/dreamgyf/test", "测试publish", new MqttPublishOption().QoS(2));
-            }
+        client.connect("broker.emqx.io", 1883);
 
-            @Override
-            public void onConnectFailure(MqttException e) {
-                e.printStackTrace();
-                System.err.println("连接失败");
-            }
-        });
+        client.subscribe(new MqttTopic("/dreamgyf/test", 2));
+        client.publish("/dreamgyf/test", "测试publish", new MqttPublishOption().QoS(2));
     }
 }

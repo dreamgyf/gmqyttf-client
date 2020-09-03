@@ -1,10 +1,9 @@
 package com.dreamgyf.gmqyttf.client.service;
 
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttConnectSuccessListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
-import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
 import com.dreamgyf.gmqyttf.client.task.connection.MqttConnackTask;
 import com.dreamgyf.gmqyttf.client.task.connection.MqttConnectTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
@@ -22,8 +21,6 @@ public class MqttConnectionService extends MqttService {
 
     private final LinkedBlockingQueue<MqttConnackPacket> mConnackQueue;
 
-    private final BlockingObject<MqttConnectCallback> mCallbackContainer;
-
     private MqttConnectTask mConnectTask;
 
     private MqttConnackTask mConnackTask;
@@ -34,13 +31,16 @@ public class MqttConnectionService extends MqttService {
         super(version, socket, threadPool);
         mConnectQueue = connectQueue;
         mConnackQueue = connackQueue;
-        mCallbackContainer = new BlockingObject<>();
     }
 
     @Override
     public void initTask() {
-        mConnectTask = new MqttConnectTask(getVersion(), getSocket(), mConnectQueue, mCallbackContainer);
-        mConnackTask = new MqttConnackTask(getVersion(), getSocket(), mConnackQueue, mCallbackContainer);
+        mConnectTask = new MqttConnectTask(getVersion(), getSocket(), mConnectQueue);
+        mConnackTask = new MqttConnackTask(getVersion(), getSocket(), mConnackQueue);
+    }
+
+    public void setOnMqttConnectSuccessListener(OnMqttConnectSuccessListener listener) {
+        mConnackTask.setOnMqttConnectSuccessListener(listener);
     }
 
     @Override
@@ -66,21 +66,17 @@ public class MqttConnectionService extends MqttService {
     public void stop() {
     }
 
-    public void connect(MqttConnectPacket packet, MqttConnectCallback callback) {
+    public void connect(MqttConnectPacket packet) {
         runOnNewThread(() -> {
             try {
                 mConnectQueue.put(packet);
-                if (callback != null) {
-                    mCallbackContainer.put(callback);
-                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         });
     }
 
-    public void disconnect() {
-        MqttDisconnectPacket packet = new MqttDisconnectPacket.Builder().build(MqttVersion.V3_1_1);
+    public void disconnect(MqttDisconnectPacket packet) {
         runOnNewThread(() -> {
             try {
                 getSocket().write(packet.getPacket());

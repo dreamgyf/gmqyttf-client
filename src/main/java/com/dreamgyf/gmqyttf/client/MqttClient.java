@@ -1,26 +1,19 @@
 package com.dreamgyf.gmqyttf.client;
 
 import com.dreamgyf.gmqyttf.client.callback.MqttClientCallback;
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.IllegalServerException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttConnectedException;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
-import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
-import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
-import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
-import com.dreamgyf.gmqyttf.common.packet.MqttUnsubscribePacket;
+import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
-import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class MqttClient {
-
-    private MqttRandomPacketIdGenerator idGenerator;
 
     private MqttClientController controller;
 
@@ -29,35 +22,28 @@ public class MqttClient {
     private boolean isConnected;
 
     public void connect(String server, int port) {
-        connect(server, port, null);
-    }
-
-    public void connect(String server, int port, MqttConnectCallback callback) {
         if (server == null || server.equals("") || port == 0) {
-            if (callback != null) {
-                callback.onConnectFailure(new IllegalServerException("Illegal server or port"));
+            if (clientCallback != null) {
+                clientCallback.onConnectionException(new IllegalServerException("Illegal server or port"));
             }
         }
         if (isConnected()) {
-            if (callback != null) {
-                callback.onConnectFailure(new MqttConnectedException("Already connected"));
+            if (clientCallback != null) {
+                clientCallback.onConnectionException(new MqttConnectedException("Already connected"));
             }
         }
-
-        idGenerator = MqttRandomPacketIdGenerator.create();
 
         //开启服务
         initController();
         try {
             controller.start(server, port);
         } catch (MqttNetworkException e) {
-            if (callback != null) {
-                callback.onConnectFailure(e);
+            if (clientCallback != null) {
+                clientCallback.onConnectionException(e);
             }
         }
 
-        //构建报文
-        MqttConnectPacket packet = new MqttConnectPacket.Builder()
+        controller.onPacketEventProduce(new MqttConnectPacket.Builder()
                 .cleanSession(cleanSession)
                 .willFlag(willFlag)
                 .willQoS(willQoS)
@@ -69,14 +55,15 @@ public class MqttClient {
                 .willTopic(willTopic)
                 .willMessage(willMessage)
                 .username(username)
-                .password(password)
-                .build(version);
-        controller.connect(packet, callback);
+                .password(password));
     }
 
     private void initController() {
-        controller = new MqttClientController(version, keepAliveTime, idGenerator);
+        controller = new MqttClientController(version, keepAliveTime);
         controller.init();
+        controller.setOnMqttConnectSuccessListener(() -> {
+            isConnected = true;
+        });
         controller.setOnMqttExceptionListener((e) -> {
             isConnected = false;
             controller.stop();
@@ -108,11 +95,7 @@ public class MqttClient {
                 .topic(topic)
                 .message(message);
 
-        if (mqttPublishOption.getQoS() > 0) {
-            builder.id(idGenerator.next());
-        }
-
-        controller.publish(builder.build(version));
+        controller.onPacketEventProduce(builder);
     }
 
     public void subscribe(MqttTopic... topics) {
@@ -120,12 +103,8 @@ public class MqttClient {
     }
 
     public void subscribe(List<MqttTopic> topics) {
-        MqttSubscribePacket packet = new MqttSubscribePacket.Builder()
-                .addAllTopic(topics)
-                .id(idGenerator.next())
-                .build(version);
-
-        controller.subscribe(packet);
+        controller.onPacketEventProduce(new MqttSubscribePacket.Builder()
+                .addAllTopic(topics));
     }
 
     public void unsubscribe(String... topics) {
@@ -133,16 +112,12 @@ public class MqttClient {
     }
 
     public void unsubscribe(List<String> topics) {
-        MqttUnsubscribePacket packet = new MqttUnsubscribePacket.Builder()
-                .addAllTopic(topics)
-                .id(idGenerator.next())
-                .build(version);
-
-        controller.unsubscribe(packet);
+        controller.onPacketEventProduce(new MqttUnsubscribePacket.Builder()
+                .addAllTopic(topics));
     }
 
     public void disconnect() {
-        controller.disconnect();
+        controller.onPacketEventProduce(new MqttDisconnectPacket.Builder());
         controller.stop();
         isConnected = false;
     }

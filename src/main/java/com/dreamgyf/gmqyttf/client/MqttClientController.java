@@ -1,19 +1,12 @@
 package com.dreamgyf.gmqyttf.client;
 
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
-import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
-import com.dreamgyf.gmqyttf.client.listener.OnMqttMessageReceivedListener;
-import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
-import com.dreamgyf.gmqyttf.client.listener.OnMqttSubscribeFailureListener;
+import com.dreamgyf.gmqyttf.client.listener.*;
 import com.dreamgyf.gmqyttf.client.service.*;
 import com.dreamgyf.gmqyttf.client.socket.MqttSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
-import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
-import com.dreamgyf.gmqyttf.common.packet.MqttPublishPacket;
-import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
-import com.dreamgyf.gmqyttf.common.packet.MqttUnsubscribePacket;
+import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.concurrent.*;
@@ -30,7 +23,7 @@ public class MqttClientController {
 
     private volatile MqttPacketQueue mPacketQueue;
 
-    private MqttRandomPacketIdGenerator mIdGenerator;
+    private final MqttRandomPacketIdGenerator mIdGenerator;
 
     /**********************************************************
      * Service组
@@ -45,10 +38,10 @@ public class MqttClientController {
      * Service组
      ***********************************************************/
 
-    public MqttClientController(MqttVersion version, short keepAliveTime, MqttRandomPacketIdGenerator idGenerator) {
+    public MqttClientController(MqttVersion version, short keepAliveTime) {
         mVersion = version;
         mKeepAliveTime = keepAliveTime;
-        mIdGenerator = idGenerator;
+        mIdGenerator = MqttRandomPacketIdGenerator.create();
         mSocket = new MqttSocket();
         mThreadPool = new ThreadPoolExecutor(20, 50,
                 30, TimeUnit.SECONDS, new SynchronousQueue<>(true),
@@ -102,6 +95,28 @@ public class MqttClientController {
         mSubscriptionService.start();
     }
 
+    public void onPacketEventProduce(MqttPacket.Builder builder) {
+        if(builder instanceof MqttConnectPacket.Builder) {
+            MqttConnectPacket packet = ((MqttConnectPacket.Builder) builder).build(mVersion);
+            mConnectionService.connect(packet);
+        } else if(builder instanceof MqttPublishPacket.Builder) {
+            if(((MqttPublishPacket.Builder) builder).getQoS() > 0) {
+                ((MqttPublishPacket.Builder) builder).id(mIdGenerator.next());
+            }
+            MqttPublishPacket packet = ((MqttPublishPacket.Builder) builder).build(mVersion);
+            mMessageService.publish(packet);
+        } else if(builder instanceof MqttSubscribePacket.Builder) {
+            MqttSubscribePacket packet = ((MqttSubscribePacket.Builder) builder).id(mIdGenerator.next()).build(mVersion);
+            mSubscriptionService.subscribe(packet);
+        } else if(builder instanceof MqttUnsubscribePacket.Builder) {
+            MqttUnsubscribePacket packet = ((MqttUnsubscribePacket.Builder) builder).id(mIdGenerator.next()).build(mVersion);
+            mSubscriptionService.unsubscribe(packet);
+        } else if(builder instanceof MqttDisconnectPacket.Builder) {
+            MqttDisconnectPacket packet = ((MqttDisconnectPacket.Builder) builder).build(mVersion);
+            mConnectionService.disconnect(packet);
+        }
+    }
+
     public void stop() {
         stopService();
         mThreadPool.shutdownNow();
@@ -120,24 +135,8 @@ public class MqttClientController {
         mPacketQueue.clear();
     }
 
-    public void connect(MqttConnectPacket packet, MqttConnectCallback callback) {
-        mConnectionService.connect(packet, callback);
-    }
-
-    public void publish(MqttPublishPacket packet) {
-        mMessageService.publish(packet);
-    }
-
-    public void subscribe(MqttSubscribePacket packet) {
-        mSubscriptionService.subscribe(packet);
-    }
-
-    public void unsubscribe(MqttUnsubscribePacket packet) {
-        mSubscriptionService.unsubscribe(packet);
-    }
-
-    public void disconnect() {
-        mConnectionService.disconnect();
+    public void setOnMqttConnectSuccessListener(OnMqttConnectSuccessListener listener) {
+        mConnectionService.setOnMqttConnectSuccessListener(listener);
     }
 
     public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {

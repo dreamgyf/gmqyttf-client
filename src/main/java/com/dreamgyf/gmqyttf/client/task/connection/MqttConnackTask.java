@@ -1,8 +1,7 @@
 package com.dreamgyf.gmqyttf.client.task.connection;
 
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
+import com.dreamgyf.gmqyttf.client.listener.OnMqttConnectSuccessListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
-import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttConnectReturnCode;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
@@ -17,38 +16,33 @@ public class MqttConnackTask extends MqttTask {
 
     private final LinkedBlockingQueue<MqttConnackPacket> mConnackQueue;
 
-    private final BlockingObject<MqttConnectCallback> mCallbackContainer;
+    private OnMqttConnectSuccessListener mConnectSuccessListener;
 
     public MqttConnackTask(MqttVersion version, MqttWritableSocket socket,
-                           LinkedBlockingQueue<MqttConnackPacket> connackQueue,
-                           BlockingObject<MqttConnectCallback> callbackContainer) {
+                           LinkedBlockingQueue<MqttConnackPacket> connackQueue) {
         super(version, socket);
         mConnackQueue = connackQueue;
-        mCallbackContainer = callbackContainer;
     }
 
     @Override
     public void onLoop() throws InterruptedException {
         MqttConnackPacket packet = mConnackQueue.take();
-        MqttConnectCallback callback = mCallbackContainer.poll();
-        handlerPacket(packet, callback);
+        handlerPacket(packet);
     }
 
-    private void handlerPacket(MqttConnackPacket packet, MqttConnectCallback callback) {
+    private void handlerPacket(MqttConnackPacket packet) {
         switch (getVersion()) {
             case V3_1_1:
-                handlerPacketV311(packet, callback);
+                handlerPacketV311(packet);
                 break;
         }
     }
 
-    private void handlerPacketV311(MqttConnackPacket packet, MqttConnectCallback callback) {
+    private void handlerPacketV311(MqttConnackPacket packet) {
         MqttException exception = null;
         switch (packet.getConnectReturnCode()) {
             case MqttConnectReturnCode.V3_1_1.ACCEPT: {
-                if (callback != null) {
-                    callback.onConnectSuccess();
-                }
+                onConnectSuccess();
                 break;
             }
             case MqttConnectReturnCode.V3_1_1.UNSUPPORTED_VERSION: {
@@ -77,9 +71,16 @@ public class MqttConnackTask extends MqttTask {
         }
         if (exception != null) {
             onMqttExceptionThrow(exception);
-            if (callback != null) {
-                callback.onConnectFailure(exception);
-            }
+        }
+    }
+
+    public void setOnMqttConnectSuccessListener(OnMqttConnectSuccessListener listener) {
+        mConnectSuccessListener = listener;
+    }
+
+    private void onConnectSuccess() {
+        if(mConnectSuccessListener != null) {
+            mConnectSuccessListener.onConnectSuccess();
         }
     }
 }
