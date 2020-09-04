@@ -43,11 +43,13 @@ public class MqttMessageService extends MqttService {
     /**********************************************************
      * 发送消息Task组
      ***********************************************************/
+
     private MqttPublishSendTask mPublishSendTask;
     private MqttPubackRecvTask mPubackRecvTask;
     private MqttPubrecRecvTask mPubrecRecvTask;
     private MqttPubrelSendTask mPubrelSendTask;
     private MqttPubcompRecvTask mPubcompRecvTask;
+
     /**********************************************************
      * 发送消息Task组
      ***********************************************************/
@@ -55,6 +57,7 @@ public class MqttMessageService extends MqttService {
     /**********************************************************
      * 接收消息Task组
      ***********************************************************/
+
     private MqttPublishRecvTask mPublishRecvTask;
     private MqttPubackSendTask mPubackSendTask;
     private MqttPubrecSendTask mPubrecSendTask;
@@ -127,11 +130,6 @@ public class MqttMessageService extends MqttService {
         runOnNewThread(mPubrecSendTask);
         runOnNewThread(mPubrelRecvTask);
         runOnNewThread(mPubcompSendTask);
-    }
-
-    @Override
-    public void stop() {
-
     }
 
     public void publish(MqttPublishPacket packet) {

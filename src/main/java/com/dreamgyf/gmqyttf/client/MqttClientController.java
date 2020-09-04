@@ -7,6 +7,7 @@ import com.dreamgyf.gmqyttf.client.socket.MqttSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
 import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttNetworkException;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttSocketException;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.concurrent.*;
@@ -21,7 +22,7 @@ public class MqttClientController {
 
     private final ExecutorService mThreadPool;
 
-    private volatile MqttPacketQueue mPacketQueue;
+    private final MqttPacketQueue mPacketQueue;
 
     private final MqttRandomPacketIdGenerator mIdGenerator;
 
@@ -43,6 +44,7 @@ public class MqttClientController {
         mVersion = version;
         mKeepAliveTime = keepAliveTime;
         mIdGenerator = MqttRandomPacketIdGenerator.create();
+        mPacketQueue = new MqttPacketQueue();
         mSocket = new MqttSocket();
         mThreadPool = new ThreadPoolExecutor(20, 50,
                 30, TimeUnit.SECONDS, new SynchronousQueue<>(true),
@@ -50,7 +52,6 @@ public class MqttClientController {
     }
 
     public void init() {
-        mPacketQueue = new MqttPacketQueue();
         initService();
     }
 
@@ -119,21 +120,23 @@ public class MqttClientController {
     }
 
     public void stop() {
-        stopService();
+        try {
+            mSocket.close();
+        } catch (MqttSocketException e) {
+            e.printStackTrace();
+        }
         mThreadPool.shutdownNow();
         clear();
     }
 
-    private void stopService() {
-        mReceiveService.stop();
-        mConnectionService.stop();
-        mPingService.stop();
-        mMessageService.stop();
-        mSubscriptionService.stop();
-    }
-
     private void clear() {
         mPacketQueue.clear();
+        mIdGenerator.clear();
+        mReceiveService = null;
+        mConnectionService = null;
+        mPingService = null;
+        mMessageService = null;
+        mSubscriptionService = null;
     }
 
     public void setOnMqttConnectSuccessListener(OnMqttConnectSuccessListener listener) {

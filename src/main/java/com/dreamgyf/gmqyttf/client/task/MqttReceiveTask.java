@@ -10,11 +10,11 @@ import com.dreamgyf.gmqyttf.common.throwable.exception.packet.IllegalPacketExcep
 import com.dreamgyf.gmqyttf.common.utils.ByteUtils;
 import com.dreamgyf.gmqyttf.common.utils.MqttPacketUtils;
 
-public class MqttPacketReceiveTask extends MqttTask {
+public class MqttReceiveTask extends MqttTask {
 
     private final MqttPacketQueue.Response mPacketRespQueue;
 
-    public MqttPacketReceiveTask(MqttVersion version, MqttWritableSocket socket, MqttPacketQueue.Response packetRespQueue) {
+    public MqttReceiveTask(MqttVersion version, MqttWritableSocket socket, MqttPacketQueue.Response packetRespQueue) {
         super(version, socket);
         mPacketRespQueue = packetRespQueue;
     }

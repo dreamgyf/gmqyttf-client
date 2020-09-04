@@ -75,11 +75,6 @@ public class MqttSubscriptionService extends MqttService {
     }
 
     @Override
-    public void stop() {
-
-    }
-
-    @Override
     public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
         super.setOnMqttExceptionListener(listener);
         mSubscribeTask.setOnMqttExceptionListener(listener);

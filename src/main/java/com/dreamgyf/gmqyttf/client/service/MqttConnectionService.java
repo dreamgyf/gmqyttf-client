@@ -62,10 +62,6 @@ public class MqttConnectionService extends MqttService {
         runOnNewThread(mConnackTask);
     }
 
-    @Override
-    public void stop() {
-    }
-
     public void connect(MqttConnectPacket packet) {
         runOnNewThread(() -> {
             try {

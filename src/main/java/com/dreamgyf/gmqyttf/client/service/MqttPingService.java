@@ -45,11 +45,6 @@ public class MqttPingService extends MqttService {
     }
 
     @Override
-    public void stop() {
-
-    }
-
-    @Override
     public void setOnMqttExceptionListener(OnMqttExceptionListener listener) {
         super.setOnMqttExceptionListener(listener);
         mPingReqTask.setOnMqttExceptionListener(listener);

@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 
 public class MqttClient {
 
-    private MqttClientController controller;
+    private final MqttClientController controller;
 
     private MqttClientCallback clientCallback;
 
@@ -53,13 +53,16 @@ public class MqttClient {
                 .willMessage(willMessage)
                 .username(username)
                 .password(password));
+
+        isConnected = true;
     }
 
     private void initController() {
-        controller = new MqttClientController(version, keepAliveTime);
         controller.init();
         controller.setOnMqttConnectSuccessListener(() -> {
-            isConnected = true;
+            if (clientCallback != null) {
+                clientCallback.onConnectSuccess();
+            }
         });
         controller.setOnMqttExceptionListener((e) -> {
             isConnected = false;
@@ -208,6 +211,7 @@ public class MqttClient {
         this.willMessage = willMessage;
         this.username = username;
         this.password = password;
+        controller = new MqttClientController(version, keepAliveTime);
     }
 
     public MqttVersion getVersion() {

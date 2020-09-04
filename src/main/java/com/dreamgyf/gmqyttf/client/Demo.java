@@ -16,6 +16,11 @@ class Demo {
 
         client.setCallback(new MqttClientCallback() {
             @Override
+            public void onConnectSuccess() {
+                System.out.println("连接成功");
+            }
+
+            @Override
             public void onConnectionException(MqttException e) {
                 e.printStackTrace();
                 System.err.println("连接异常: " + e + " " + e.getMessage());
