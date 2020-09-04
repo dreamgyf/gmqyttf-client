@@ -1,6 +1,6 @@
 package com.dreamgyf.gmqyttf.client.socket;
 
-import com.dreamgyf.gmqyttf.common.exception.net.*;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.*;
 
 import java.io.IOException;
 import java.io.InputStream;

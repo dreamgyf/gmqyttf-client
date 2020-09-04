@@ -4,9 +4,9 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.connect.MqttConnectException;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 import com.dreamgyf.gmqyttf.common.packet.MqttPingreqPacket;
+import com.dreamgyf.gmqyttf.common.throwable.exception.connect.MqttConnectException;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttSocketException;
 
 public class MqttPingReqTask extends MqttTask {
 

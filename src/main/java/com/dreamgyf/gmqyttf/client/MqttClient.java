@@ -3,11 +3,11 @@ package com.dreamgyf.gmqyttf.client;
 import com.dreamgyf.gmqyttf.client.callback.MqttClientCallback;
 import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.net.IllegalServerException;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttConnectedException;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttNetworkException;
 import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttNetworkException;
+import com.dreamgyf.gmqyttf.common.throwable.runtime.connect.MqttConnectedException;
+import com.dreamgyf.gmqyttf.common.throwable.runtime.net.IllegalServerException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,14 +23,10 @@ public class MqttClient {
 
     public void connect(String server, int port) {
         if (server == null || server.equals("") || port == 0) {
-            if (clientCallback != null) {
-                clientCallback.onConnectionException(new IllegalServerException("Illegal server or port"));
-            }
+            throw new IllegalServerException("Illegal server or port");
         }
         if (isConnected()) {
-            if (clientCallback != null) {
-                clientCallback.onConnectionException(new MqttConnectedException("Already connected"));
-            }
+            throw new MqttConnectedException("Already connected");
         }
 
         //开启服务

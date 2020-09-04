@@ -3,8 +3,8 @@ package com.dreamgyf.gmqyttf.client;
 import com.dreamgyf.gmqyttf.client.callback.MqttClientCallback;
 import com.dreamgyf.gmqyttf.client.options.MqttPublishOption;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
+import com.dreamgyf.gmqyttf.common.throwable.exception.MqttException;
 
 class Demo {
 

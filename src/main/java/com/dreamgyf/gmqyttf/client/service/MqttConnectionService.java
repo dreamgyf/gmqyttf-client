@@ -7,10 +7,10 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.connection.MqttConnackTask;
 import com.dreamgyf.gmqyttf.client.task.connection.MqttConnectTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnackPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttConnectPacket;
 import com.dreamgyf.gmqyttf.common.packet.MqttDisconnectPacket;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttSocketException;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;

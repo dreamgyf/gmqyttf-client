@@ -1,7 +1,7 @@
 package com.dreamgyf.gmqyttf.client.callback;
 
-import com.dreamgyf.gmqyttf.common.exception.MqttException;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
+import com.dreamgyf.gmqyttf.common.throwable.exception.MqttException;
 
 public interface MqttClientCallback extends MqttCallback {
     void onConnectionException(MqttException e);

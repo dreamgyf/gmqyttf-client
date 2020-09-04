@@ -4,8 +4,8 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.structure.BlockingObject;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.connect.MqttConnectException;
 import com.dreamgyf.gmqyttf.common.packet.MqttPingrespPacket;
+import com.dreamgyf.gmqyttf.common.throwable.exception.connect.MqttConnectException;
 
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;

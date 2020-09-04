@@ -4,7 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class BlockingObject<T> {
 
-    private ArrayBlockingQueue<T> mBlockingQueue = new ArrayBlockingQueue<>(1);
+    private final ArrayBlockingQueue<T> mBlockingQueue = new ArrayBlockingQueue<>(1);
 
     public T poll() {
         return mBlockingQueue.poll();

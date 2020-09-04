@@ -5,9 +5,9 @@ import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttSubackReturnCode;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.packet.InvalidPacketIdException;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubackPacket;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
+import com.dreamgyf.gmqyttf.common.throwable.exception.packet.InvalidPacketIdException;
 import com.dreamgyf.gmqyttf.common.utils.MqttRandomPacketIdGenerator;
 
 import java.util.List;

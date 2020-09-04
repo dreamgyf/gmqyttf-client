@@ -4,8 +4,8 @@ import com.dreamgyf.gmqyttf.client.listener.OnMqttExceptionListener;
 import com.dreamgyf.gmqyttf.client.listener.OnMqttPacketSendListener;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.MqttException;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
+import com.dreamgyf.gmqyttf.common.throwable.exception.MqttException;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttSocketException;
 
 public abstract class MqttTask implements Runnable {
 

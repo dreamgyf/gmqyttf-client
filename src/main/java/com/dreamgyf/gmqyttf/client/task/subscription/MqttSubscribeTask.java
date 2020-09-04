@@ -3,9 +3,9 @@ package com.dreamgyf.gmqyttf.client.task.subscription;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.client.task.MqttTask;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.net.MqttSocketException;
 import com.dreamgyf.gmqyttf.common.packet.MqttSubscribePacket;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
+import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttSocketException;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

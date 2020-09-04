@@ -4,9 +4,9 @@ import com.dreamgyf.gmqyttf.client.env.MqttPacketQueue;
 import com.dreamgyf.gmqyttf.client.socket.MqttWritableSocket;
 import com.dreamgyf.gmqyttf.common.enums.MqttPacketType;
 import com.dreamgyf.gmqyttf.common.enums.MqttVersion;
-import com.dreamgyf.gmqyttf.common.exception.MqttException;
-import com.dreamgyf.gmqyttf.common.exception.packet.IllegalPacketException;
 import com.dreamgyf.gmqyttf.common.packet.*;
+import com.dreamgyf.gmqyttf.common.throwable.exception.MqttException;
+import com.dreamgyf.gmqyttf.common.throwable.exception.packet.IllegalPacketException;
 import com.dreamgyf.gmqyttf.common.utils.ByteUtils;
 import com.dreamgyf.gmqyttf.common.utils.MqttPacketUtils;
 
