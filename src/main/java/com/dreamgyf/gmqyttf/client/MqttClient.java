@@ -12,15 +12,18 @@ import com.dreamgyf.gmqyttf.common.throwable.runtime.net.IllegalServerException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 public class MqttClient {
 
-    private final MqttClientController controller;
+    private final MqttClientController mController;
 
-    private MqttClientCallback clientCallback;
+    private MqttClientCallback mClientCallback;
 
     private boolean isConnected;
+
+    private final ExecutorService mUserThreadPool;
 
     public void connect(String server, int port) {
         if (server == null || server.equals("") || port == 0) {
@@ -33,14 +36,14 @@ public class MqttClient {
         //开启服务
         initController();
         try {
-            controller.start(server, port);
+            mController.start(server, port);
         } catch (MqttNetworkException e) {
-            if (clientCallback != null) {
-                clientCallback.onConnectionException(e);
+            if (mClientCallback != null) {
+                mClientCallback.onConnectionException(e);
             }
         }
 
-        controller.onPacketEventProduce(new MqttConnectPacket.Builder()
+        mController.onPacketEventProduce(new MqttConnectPacket.Builder()
                 .cleanSession(cleanSession)
                 .willFlag(willFlag)
                 .willQoS(willQoS)
@@ -58,27 +61,27 @@ public class MqttClient {
     }
 
     private void initController() {
-        controller.init();
-        controller.setOnMqttConnectSuccessListener(() -> {
-            if (clientCallback != null) {
-                clientCallback.onConnectSuccess();
+        mController.init();
+        mController.setOnMqttConnectSuccessListener(() -> {
+            if (mClientCallback != null) {
+                runOnUserThread(() -> mClientCallback.onConnectSuccess());
             }
         });
-        controller.setOnMqttExceptionListener((e) -> {
+        mController.setOnMqttExceptionListener((e) -> {
             isConnected = false;
-            controller.stop();
-            if (clientCallback != null) {
-                clientCallback.onConnectionException(e);
+            mController.stop();
+            if (mClientCallback != null) {
+                runOnUserThread(() -> mClientCallback.onConnectionException(e));
             }
         });
-        controller.setOnMqttSubscribeFailureListener((topic) -> {
-            if (clientCallback != null) {
-                clientCallback.onSubscribeFailure(topic);
+        mController.setOnMqttSubscribeFailureListener((topic) -> {
+            if (mClientCallback != null) {
+                runOnUserThread(() -> mClientCallback.onSubscribeFailure(topic));
             }
         });
-        controller.setOnMqttMessageReceivedListener((topic, message) -> {
-            if (clientCallback != null) {
-                clientCallback.onMessageReceived(topic, message);
+        mController.setOnMqttMessageReceivedListener((topic, message) -> {
+            if (mClientCallback != null) {
+                runOnUserThread(() -> mClientCallback.onMessageReceived(topic, message));
             }
         });
     }
@@ -90,7 +93,7 @@ public class MqttClient {
     public void publish(String topic, String message, MqttPublishOption mqttPublishOption) {
         checkIfUnconnected();
 
-        controller.onPacketEventProduce(new MqttPublishPacket.Builder()
+        mController.onPacketEventProduce(new MqttPublishPacket.Builder()
                 .DUP(mqttPublishOption.getDUP())
                 .QoS(mqttPublishOption.getQoS())
                 .RETAIN(mqttPublishOption.getRETAIN())
@@ -105,7 +108,7 @@ public class MqttClient {
     public void subscribe(List<MqttTopic> topics) {
         checkIfUnconnected();
 
-        controller.onPacketEventProduce(new MqttSubscribePacket.Builder()
+        mController.onPacketEventProduce(new MqttSubscribePacket.Builder()
                 .addAllTopic(topics));
     }
 
@@ -116,15 +119,15 @@ public class MqttClient {
     public void unsubscribe(List<String> topics) {
         checkIfUnconnected();
 
-        controller.onPacketEventProduce(new MqttUnsubscribePacket.Builder()
+        mController.onPacketEventProduce(new MqttUnsubscribePacket.Builder()
                 .addAllTopic(topics));
     }
 
     public void disconnect() {
         checkIfUnconnected();
 
-        controller.onPacketEventProduce(new MqttDisconnectPacket.Builder());
-        controller.stop();
+        mController.onPacketEventProduce(new MqttDisconnectPacket.Builder());
+        mController.stop();
         isConnected = false;
     }
 
@@ -138,62 +141,66 @@ public class MqttClient {
         }
     }
 
+    private void runOnUserThread(Runnable runnable) {
+        mUserThreadPool.execute(runnable);
+    }
+
     public void setCallback(MqttClientCallback callback) {
-        this.clientCallback = callback;
+        this.mClientCallback = callback;
     }
 
     /**
      * 协议版本
      */
-    private MqttVersion version;
+    private final MqttVersion version;
     /**
      * 清理会话 Clean Session
      */
-    private boolean cleanSession;
+    private final boolean cleanSession;
     /**
      * 遗嘱标志 Will Flag
      */
-    private boolean willFlag;
+    private final boolean willFlag;
     /**
      * 遗嘱QoS Will QoS
      */
-    private int willQoS;
+    private final int willQoS;
     /**
      * 遗嘱保留 Will Retain
      */
-    private boolean willRetain;
+    private final boolean willRetain;
     /**
      * 用户名标志 User Name Flag
      */
-    private boolean usernameFlag;
+    private final boolean usernameFlag;
     /**
      * 密码标志 Password Flag
      */
-    private boolean passwordFlag;
+    private final boolean passwordFlag;
     /**
      * 保持连接 Keep Alive
      */
-    private short keepAliveTime;
+    private final short keepAliveTime;
     /**
      * 客户端标识符 Client Identifier
      */
-    private String clientId;
+    private final String clientId;
     /**
      * 遗嘱主题 Will Topic
      */
-    private String willTopic;
+    private final String willTopic;
     /**
      * 遗嘱消息 Will Message
      */
-    private String willMessage;
+    private final String willMessage;
     /**
      * 用户名 User Name
      */
-    private String username;
+    private final String username;
     /**
      * 密码 Password
      */
-    private String password;
+    private final String password;
 
     private MqttClient(MqttVersion version, boolean cleanSession, boolean willFlag, int willQoS,
                        boolean willRetain, boolean usernameFlag, boolean passwordFlag, short keepAliveTime,
@@ -211,7 +218,10 @@ public class MqttClient {
         this.willMessage = willMessage;
         this.username = username;
         this.password = password;
-        controller = new MqttClientController(version, keepAliveTime);
+        mController = new MqttClientController(version, keepAliveTime);
+        mUserThreadPool = new ThreadPoolExecutor(5, 10,
+                30, TimeUnit.SECONDS, new SynchronousQueue<>(true),
+                Executors.defaultThreadFactory(), new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
     public MqttVersion getVersion() {
