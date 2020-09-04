@@ -85,9 +85,7 @@ public class MqttClient {
     }
 
     public void publish(String topic, String message, MqttPublishOption mqttPublishOption) {
-        if (!isConnected()) {
-            throw new MqttUnconnectedException("Unconnected");
-        }
+        checkIfUnconnected();
 
         controller.onPacketEventProduce(new MqttPublishPacket.Builder()
                 .DUP(mqttPublishOption.getDUP())
@@ -102,9 +100,7 @@ public class MqttClient {
     }
 
     public void subscribe(List<MqttTopic> topics) {
-        if (!isConnected()) {
-            throw new MqttUnconnectedException("Unconnected");
-        }
+        checkIfUnconnected();
 
         controller.onPacketEventProduce(new MqttSubscribePacket.Builder()
                 .addAllTopic(topics));
@@ -115,18 +111,14 @@ public class MqttClient {
     }
 
     public void unsubscribe(List<String> topics) {
-        if (!isConnected()) {
-            throw new MqttUnconnectedException("Unconnected");
-        }
+        checkIfUnconnected();
 
         controller.onPacketEventProduce(new MqttUnsubscribePacket.Builder()
                 .addAllTopic(topics));
     }
 
     public void disconnect() {
-        if (!isConnected()) {
-            throw new MqttUnconnectedException("Unconnected");
-        }
+        checkIfUnconnected();
 
         controller.onPacketEventProduce(new MqttDisconnectPacket.Builder());
         controller.stop();
@@ -135,6 +127,12 @@ public class MqttClient {
 
     public boolean isConnected() {
         return isConnected;
+    }
+
+    private void checkIfUnconnected() {
+        if (!isConnected()) {
+            throw new MqttUnconnectedException("Unconnected");
+        }
     }
 
     public void setCallback(MqttClientCallback callback) {
