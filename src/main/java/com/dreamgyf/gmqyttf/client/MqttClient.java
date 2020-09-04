@@ -7,6 +7,7 @@ import com.dreamgyf.gmqyttf.common.packet.*;
 import com.dreamgyf.gmqyttf.common.params.MqttTopic;
 import com.dreamgyf.gmqyttf.common.throwable.exception.net.MqttNetworkException;
 import com.dreamgyf.gmqyttf.common.throwable.runtime.connect.MqttConnectedException;
+import com.dreamgyf.gmqyttf.common.throwable.runtime.connect.MqttUnconnectedException;
 import com.dreamgyf.gmqyttf.common.throwable.runtime.net.IllegalServerException;
 
 import java.util.Arrays;
@@ -84,14 +85,16 @@ public class MqttClient {
     }
 
     public void publish(String topic, String message, MqttPublishOption mqttPublishOption) {
-        MqttPublishPacket.Builder builder = new MqttPublishPacket.Builder()
+        if (!isConnected()) {
+            throw new MqttUnconnectedException("Unconnected");
+        }
+
+        controller.onPacketEventProduce(new MqttPublishPacket.Builder()
                 .DUP(mqttPublishOption.getDUP())
                 .QoS(mqttPublishOption.getQoS())
                 .RETAIN(mqttPublishOption.getRETAIN())
                 .topic(topic)
-                .message(message);
-
-        controller.onPacketEventProduce(builder);
+                .message(message));
     }
 
     public void subscribe(MqttTopic... topics) {
@@ -99,6 +102,10 @@ public class MqttClient {
     }
 
     public void subscribe(List<MqttTopic> topics) {
+        if (!isConnected()) {
+            throw new MqttUnconnectedException("Unconnected");
+        }
+
         controller.onPacketEventProduce(new MqttSubscribePacket.Builder()
                 .addAllTopic(topics));
     }
@@ -108,11 +115,19 @@ public class MqttClient {
     }
 
     public void unsubscribe(List<String> topics) {
+        if (!isConnected()) {
+            throw new MqttUnconnectedException("Unconnected");
+        }
+
         controller.onPacketEventProduce(new MqttUnsubscribePacket.Builder()
                 .addAllTopic(topics));
     }
 
     public void disconnect() {
+        if (!isConnected()) {
+            throw new MqttUnconnectedException("Unconnected");
+        }
+
         controller.onPacketEventProduce(new MqttDisconnectPacket.Builder());
         controller.stop();
         isConnected = false;
