@@ -71,7 +71,8 @@ public class MqttClient {
             isConnected = false;
             mController.stop();
             if (mClientCallback != null) {
-                runOnUserThread(() -> mClientCallback.onConnectionException(e));
+                mClientCallback.onConnectionException(e);
+                mUserThreadPool.shutdownNow();
             }
         });
         mController.setOnMqttSubscribeFailureListener((topic) -> {
