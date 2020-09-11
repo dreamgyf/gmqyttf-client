@@ -29,15 +29,11 @@ public class MqttSocket implements MqttWritableSocket {
     }
 
     public void close() throws MqttSocketException {
-        synchronized (mWriteLock) {
-            synchronized (mReadLock) {
-                try {
-                    mSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    throw new MqttSocketCloseException();
-                }
-            }
+        try {
+            mSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new MqttSocketCloseException();
         }
     }
 

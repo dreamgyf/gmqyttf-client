@@ -68,11 +68,13 @@ public class MqttClient {
             }
         });
         mController.setOnMqttExceptionListener((e) -> {
-            isConnected = false;
-            mController.stop();
-            if (mClientCallback != null) {
-                mClientCallback.onConnectionException(e);
-                mUserThreadPool.shutdownNow();
+            if(isConnected) {
+                isConnected = false;
+                mController.stop();
+                if (mClientCallback != null) {
+                    mClientCallback.onConnectionException(e);
+                    mUserThreadPool.shutdownNow();
+                }
             }
         });
         mController.setOnMqttSubscribeFailureListener((topic) -> {
