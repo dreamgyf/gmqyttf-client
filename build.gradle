@@ -1,18 +1,25 @@
+buildscript {
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
+        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+    }
+}
+
 plugins {
     id 'java'
 }
-
-group 'com.dreamgyf'
-version '0.0.1'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 repositories {
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation fileTree(dir:'libs',include:['*.jar'])
+    implementation 'com.dreamgyf.mqtt:gmqyttf-common:0.1.0'
 }
+
+apply from: 'bintray-config.gradle'

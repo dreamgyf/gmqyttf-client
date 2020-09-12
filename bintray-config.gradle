@@ -1,0 +1,32 @@
+ext {
+    //bintray 网站上你创建的仓库的名字（必配项）
+    bintrayRepo = 'maven'
+    //在这个仓库下的 package name（必配项）
+    bintrayName = 'gmqyttf-client'
+    //以上两项均只是指向 bintray 网站上你的仓库和仓库下的package
+
+    //publishedGroupId:artifact:libraryVersion 构成你开源库的唯一路径
+    publishedGroupId = 'com.dreamgyf.mqtt'
+    artifact = 'gmqyttf-client'
+    libraryVersion = '0.1.0'
+
+    //以下三项只是对开源库的描述
+    libraryName = 'gmqyttf-client'
+    libraryDescription = 'Implementation of the client part of the MQTT protocol MQTT协议客户端部分的实现'
+    siteUrl = 'https://github.com/dreamgyf/gmqyttf-client'
+
+    //开源库对应的 github 地址
+    gitUrl = 'https://github.com/dreamgyf/gmqyttf-client.git'
+
+    //开发者信息
+    developerId = 'dreamgyf'
+    developerName = 'dreamgyf'
+    developerEmail = 'g2409197994@gmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+apply from: 'https://raw.githubusercontent.com/dreamgyf/SomeScript/master/bintray/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/dreamgyf/SomeScript/master/bintray/bintrayv1.gradle'
