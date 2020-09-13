@@ -1,8 +1,6 @@
 package com.dreamgyf.gmqyttf.client.env;
 
-import com.dreamgyf.gmqyttf.client.callback.MqttConnectCallback;
 import com.dreamgyf.gmqyttf.common.packet.*;
-import javafx.util.Pair;
 
 import java.util.concurrent.LinkedBlockingQueue;
 
