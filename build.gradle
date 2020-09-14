@@ -25,7 +25,6 @@ tasks.withType(Javadoc) {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
-    implementation()
     api 'com.dreamgyf.mqtt:gmqyttf-common:0.1.0'
 }
 
