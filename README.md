@@ -9,42 +9,91 @@
 
 1. Dependency
 
-* Maven
-  
-Add Jcenter repository first
-  
-```xml
-<repository>
-      <id>jcenter</id>
-      <name>jcenter</name>
-      <url>https://jcenter.bintray.com</url>
-</repository>
-```
+    * Maven
 
-then
-  
-```xml
-<dependency>
-    <groupId>com.dreamgyf.mqtt</groupId>
-    <artifactId>gmqyttf-client</artifactId>
-    <version>0.1.0</version>
-    <type>pom</type>
-</dependency>
-```
+        Add Jcenter repository first
 
-* Gradle
+        ```xml
+        <repository>
+              <id>jcenter</id>
+              <name>jcenter</name>
+              <url>https://jcenter.bintray.com</url>
+        </repository>
+        ```
 
-Add Jcenter repository first
+        then
 
-```groovy
-repositories {
-  jcenter()
-}
-```
+        ```xml
+        <dependency>
+            <groupId>com.dreamgyf.mqtt</groupId>
+            <artifactId>gmqyttf-client</artifactId>
+            <version>0.1.0</version>
+            <type>pom</type>
+        </dependency>
+        ```
 
-then
+    * Gradle
 
-```groovy
-implementation 'com.dreamgyf.mqtt:gmqyttf-client:0.1.0'
-```
+        Add Jcenter repository first
 
+        ```groovy
+        repositories {
+          jcenter()
+        }
+        ```
+
+        then
+
+        ```groovy
+        implementation 'com.dreamgyf.mqtt:gmqyttf-client:0.1.0'
+        ```
+
+2. Run
+
+    ```java
+    //Build client first
+    MqttClient client = new MqttClient.Builder()
+       .cleanSession(true)
+       .clientId("test1")
+       .usernameFlag(true)
+       .passwordFlag(true)
+       .username("dreamgyf")
+       .password("dreamgyf")
+       .keepAliveTime((short) 10)
+       .willFlag(true)
+       .willQoS(2)
+       .willTopic("/willTopic")
+       .willMessage("")
+       .willRetain(true)
+       .build(MqttVersion.V3_1_1);
+
+    //Set callback
+    client.setCallback(new MqttClientCallback() {
+        @Override
+        public void onConnectSuccess() {
+            System.out.println("Connection success");
+        }
+
+        @Override
+        public void onConnectionException(MqttException e) {
+            e.printStackTrace();
+            System.err.println("Connection exception: " + e + " " + e.getMessage());
+        }
+
+        @Override
+        public void onSubscribeFailure(MqttTopic mqttTopic) {
+            System.err.println("Subscription failed: " + mqttTopic.getTopic() + " QoS: " + mqttTopic.getQoS());
+        }
+
+        @Override
+        public void onMessageReceived(String topic, String message) {
+            System.out.println("Message received, topic: " + topic + " message: " + message);
+        }
+    });
+
+    //Connect,subscribe,publish
+    client.connect("broker.emqx.io", 1883);
+
+    client.subscribe(new MqttTopic("/dreamgyf/test", 2));
+    client.publish("/dreamgyf/test", "publish test", new MqttPublishOption().QoS(2));
+    ```
