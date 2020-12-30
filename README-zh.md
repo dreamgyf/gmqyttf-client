@@ -1,4 +1,4 @@
-# Implementation of the client part of the MQTT protocol
+# MQTT协议客户端
 
 [![License](https://img.shields.io/badge/license-Apache%202-green)](https://github.com/dreamgyf/gmqyttf-client/blob/master/LICENSE)
 [![Forks](https://img.shields.io/github/forks/dreamgyf/gmqyttf-client)](https://github.com/dreamgyf/gmqyttf-client/network/members)
@@ -9,13 +9,13 @@
 |
 [中文](https://github.com/dreamgyf/gmqyttf-client/blob/master/README-zh.md)
 
-### Get Started
+### 开始使用
 
-1. Dependency
+1. 依赖
 
     * Maven
 
-        Add Jcenter repository first
+        先添加Jcenter仓库
 
         ```xml
         <repository>
@@ -25,7 +25,7 @@
         </repository>
         ```
 
-        then
+        然后
 
         ```xml
         <dependency>
@@ -38,7 +38,7 @@
 
     * Gradle
 
-        Add Jcenter repository first
+        先添加Jcenter仓库
 
         ```groovy
         repositories {
@@ -46,16 +46,16 @@
         }
         ```
 
-        then
+        然后
 
         ```groovy
         implementation 'com.dreamgyf.mqtt:gmqyttf-client:0.1.0'
         ```
 
-2. Run
+2. 运行
 
     ```java
-    //Build client first
+    //首先，创建一个MqttClient实例
     MqttClient client = new MqttClient.Builder()
        .cleanSession(true)
        .clientId("test1")
@@ -71,7 +71,7 @@
        .willRetain(true)
        .build(MqttVersion.V3_1_1);
 
-    //Set callback
+    //设置回调
     client.setCallback(new MqttClientCallback() {
         @Override
         public void onConnectSuccess() {
@@ -95,7 +95,7 @@
         }
     });
 
-    //Connect,subscribe,publish
+    //连接，订阅和发布
     client.connect("broker.emqx.io", 1883);
 
     client.subscribe(new MqttTopic("/dreamgyf/test", 2));
